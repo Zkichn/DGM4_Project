@@ -12,6 +12,12 @@ import aiohttp
 from PIL import Image
 from tqdm.asyncio import tqdm
 from transformers import BertTokenizerFast
+from prompt_builder import (
+    BertTokenView,
+    has_valid_box,
+    build_prompt_v2,
+    build_messages_multimodal
+)
 
 
 # -----------------------------
@@ -126,15 +132,6 @@ def to_data_url(img_bytes: bytes, mime: str) -> str:
 # -----------------------------
 # Utilities: fake_image_box / fake_text_pos
 # -----------------------------
-#检查给定的图像边界框（bounding box）是否是一个合法的、有实际面积的坐标列表
-def has_valid_box(box: Any) -> bool:
-    if not isinstance(box, list) or len(box) != 4:
-        return False
-    try:
-        x1, y1, x2, y2 = [float(v) for v in box]
-    except Exception:
-        return False
-    return (x2 - x1) > 1e-6 and (y2 - y1) > 1e-6
 #推断伪造模态。通过检查有没有合法的图片框（box）和文本位置（text_pos），
 # 判断这个样本是“仅图片被改 (image)”、“仅文字被改 (text)”、“图文都被改 (both)”还是“都没改 (none)”。
 def infer_fake_modality(ann: Dict[str, Any]) -> str:
@@ -148,18 +145,7 @@ def infer_fake_modality(ann: Dict[str, Any]) -> str:
     if txt_flag:
         return "text"
     return "none"
-#把坐标列表格式化成可读的字符串，塞给大模型看。
-def format_box_xyxy(box: Any) -> str:
-    if not has_valid_box(box):
-        return "[]"
-    x1, y1, x2, y2 = box
-    return f"[xmin={x1}, ymin={y1}, xmax={x2}, ymax={y2}]"
-#在使用 BERT 分词器（Tokenizer）对文本进行处理时，
-#将“被标记为虚假/篡改的文本位置（索引）”转换成人类或大模型（LLM）容易阅读的上下文视图
-@dataclass
-class BertTokenView:
-    tokens_with_idx: List[str]
-    marked_context: str
+
 #通过这个函数处理后，你就可以把生成的 marked_context 直接拼接在 Prompt 里喂给大模型。大模型一读到 - around pos 15: ...，
 # 就能精准定位到是哪个具体的词出现了逻辑或事实错误，从而生成更准确的分析报告（Rationale）
 def build_bert_token_view(
@@ -188,111 +174,6 @@ def build_bert_token_view(
 
     marked_context = "\n".join(contexts) if contexts else "(no valid fake_text_pos context)"
     return BertTokenView(tokens_with_idx=tokens_with_idx, marked_context=marked_context)
-
-
-# -----------------------------
-# Prompting
-# -----------------------------
-def build_prompt(
-    fake_cls: str,
-    fake_modality: str,
-    caption: str,
-    fake_image_box: Any,
-    fake_text_pos: Any,
-    bert_view: Optional[BertTokenView],
-) -> str:
-    is_fake = (str(fake_cls).lower() != "orig")
-    verdict = "FAKE" if is_fake else "REAL"
-
-    box_str = format_box_xyxy(fake_image_box)
-    pos_list = fake_text_pos if isinstance(fake_text_pos, list) else []
-
-    bert_block = ""
-    if bert_view is not None:
-        bert_block = f"\n- Text Context for reference: \n{bert_view.marked_context}"
-
-    if fake_modality == "text":
-        modality_guidance = (
-            "CRITICAL: The IMAGE is completely REAL. The manipulation is ONLY in the TEXT. "
-            "DO NOT claim there are visual artifacts in the image. Instead, focus entirely on "
-            "how the highlighted text tokens contradict the visual facts, exhibit unnatural sentiment, "
-            "or introduce logical/entity mismatches with the image."
-        )
-    elif fake_modality == "image":
-        modality_guidance = (
-            "CRITICAL: The TEXT is completely REAL. The manipulation is ONLY in the IMAGE. "
-            "DO NOT claim the text is illogical. Focus entirely on the visual artifacts "
-            "(e.g., unnatural blending, lighting inconsistencies, texture degradation) specifically "
-            "in or around the provided bounding box."
-        )
-    elif fake_modality == "both":
-        modality_guidance = (
-            "CRITICAL: BOTH the image AND the text are MANIPULATED. "
-            "You must briefly point out the visual artifacts in the image AND the factual/semantic "
-            "mismatch in the text."
-        )
-    else: 
-        modality_guidance = (
-            "CRITICAL: Both the image and the text are REAL. "
-            "Explain how the text naturally, factually, and emotionally aligns with the unaltered visual evidence. "
-            "State clearly that no manipulation is detected."
-        )
-
-    perspectives = [
-        "Start directly with your observation, avoiding filler words.",
-        "Focus on the relationship between the visual elements and the narrative of the text.",
-        "Provide a concise, evidence-based assessment of the media's authenticity.",
-    ]
-    random_perspective = random.choice(perspectives)
-
-    prompt = f"""You are an expert multimodal forensic analyst. Evaluate the provided image and caption.
-
-Rules for your analysis:
-1. Modality Constraint: {modality_guidance}
-2. Be Concise & Natural: Write a short, free-flowing paragraph (around 40-80 words). DO NOT use numbered lists. Avoid repetitive templates.
-3. Grounded Evidence: If bounding boxes or text token positions are provided, incorporate them naturally into your explanation to prove your point.
-4. Tone: {random_perspective}
-
-Inputs:
-- Target Verdict: {verdict}
-- Category: {fake_cls}
-- Caption: "{caption}"
-- fake_image_box: {box_str}
-- fake_text_pos: {pos_list}{bert_block}
-
-Output Format (Exactly 3 lines, no extra line breaks):
-Verdict: {verdict}
-Category: {fake_cls}
-Evidence & Location: <Write your concise paragraph here based strictly on the Modality Constraint.>
-"""
-    return prompt
-
-#将上面构建的文字 Prompt 和前面转好 Base64 的全图（如果有裁剪图，也会加上裁剪图）
-# 组装成 OpenAI 标准的 [{"role": "system", ...}, {"role": "user", ...}] 消息体格式。
-def build_messages_multimodal(
-    prompt_text: str,
-    full_img_data_url: str,
-    crop_img_data_url: Optional[str] = None,
-) -> List[Dict[str, Any]]:
-    system_content = (
-        "You are an expert multimodal forensic analyst. "
-        "You must evaluate both the image and the text caption for inconsistencies or manipulations. "
-        "Strictly follow the requested 3-line output format. "
-        "Keep your explanations natural, highly diverse, and strictly grounded in the provided evidence. "
-        "NEVER hallucinate artifacts."
-    )
-    system = {"role": "system", "content": system_content}
-
-    user_content: List[Dict[str, Any]] = [
-        {"type": "text", "text": prompt_text},
-        {"type": "image_url", "image_url": {"url": full_img_data_url}},
-    ]
-    if crop_img_data_url is not None:
-        user_content.append({"type": "image_url", "image_url": {"url": crop_img_data_url}})
-
-    user = {"role": "user", "content": user_content}
-    return [system, user]
-
 
 # -----------------------------
 # Async Bailian API call (修改后的请求函数)
@@ -371,7 +252,7 @@ async def process_single_annotation(
                         pass
             bert_view = build_bert_token_view(tokenizer, caption, pos_int, window=6, max_tokens_show=120)
 
-        prompt_text = build_prompt(
+        prompt_text = build_prompt_v2(
             fake_cls=str(fake_cls),
             fake_modality=fake_modality,
             caption=caption,
