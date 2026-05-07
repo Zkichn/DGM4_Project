@@ -1,6 +1,8 @@
 import random
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
+import random
+from typing import Any, Optional
 
 #在使用 BERT 分词器（Tokenizer）对文本进行处理时，
 #将“被标记为虚假/篡改的文本位置（索引）”转换成人类或大模型（LLM）容易阅读的上下文视图
@@ -183,6 +185,327 @@ Evidence & Location: <Write your concise paragraph here strictly following the r
 """
     return prompt
 
+def infer_manipulation_method(image_path: str, fake_cls: str) -> str:
+    """
+    从 image path 中推断具体生成方式。
+    例如:
+    DGM4/manipulation/infoswap/995762-043201-infoswap.jpg -> infoswap
+    DGM4/manipulation/simswap/69406-106968-simswap.jpg -> simswap
+    DGM4/manipulation/StyleCLIP/1472933-StyleCLIP.jpg -> styleclip
+    """
+
+    path = str(image_path).lower()
+    cls_name = str(fake_cls).lower()
+
+    if "simswap" in path:
+        return "simswap"
+
+    if "infoswap" in path:
+        return "infoswap"
+
+    if "styleclip" in path:
+        return "styleclip"
+
+    if "text_swap" in path or "textswap" in path:
+        return "text_swap"
+
+    if "orig" in cls_name:
+        return "orig"
+
+    return cls_name
+
+def sample_reasoning_family(
+    fake_cls: str,
+    fake_modality: str,
+    image_path: str = "",
+) -> str:
+    """
+    根据 fake_cls + fake_modality + image_path 推断 reasoning family。
+    """
+
+    cls_name = str(fake_cls).lower()
+    method = infer_manipulation_method(image_path, fake_cls)
+
+    if cls_name == "orig" or method == "orig":
+        return random.choice([
+            "consistency",
+            "semantic",
+            "contextual"
+        ])
+
+    if fake_modality == "text":
+        weighted = [
+            ("semantic", 0.60),
+            ("contextual", 0.30),
+            ("consistency", 0.10),
+        ]
+
+    elif fake_modality == "image":
+
+        if method == "simswap":
+            weighted = [
+                ("artifact", 0.45),
+                ("geometry", 0.35),
+                ("photographic", 0.20),
+            ]
+
+        elif method == "infoswap":
+            weighted = [
+                ("artifact", 0.35),
+                ("geometry", 0.30),
+                ("photographic", 0.20),
+                ("semantic", 0.15),
+            ]
+
+        elif method == "styleclip":
+            weighted = [
+                ("artifact", 0.45),
+                ("photographic", 0.30),
+                ("semantic", 0.25),
+            ]
+
+        elif "face_swap" in cls_name:
+            weighted = [
+                ("artifact", 0.40),
+                ("geometry", 0.35),
+                ("photographic", 0.20),
+                ("semantic", 0.05),
+            ]
+
+        else:
+            weighted = [
+                ("artifact", 0.40),
+                ("geometry", 0.30),
+                ("photographic", 0.20),
+                ("semantic", 0.10),
+            ]
+
+    elif fake_modality == "both":
+        weighted = [
+            ("semantic", 0.35),
+            ("artifact", 0.25),
+            ("geometry", 0.20),
+            ("contextual", 0.20),
+        ]
+
+    else:
+        weighted = [
+            ("consistency", 1.0)
+        ]
+
+    families = [x[0] for x in weighted]
+    probs = [x[1] for x in weighted]
+
+    return random.choices(families, weights=probs, k=1)[0]
+
+
+def get_reasoning_instruction(reasoning_family: str) -> str:
+
+    reasoning_map = {
+
+        "artifact": (
+            "Focus on localized visual irregularities such as "
+            "texture discontinuities, blending artifacts, noise inconsistencies, "
+            "illumination mismatch, or unnatural boundary transitions. "
+            "Avoid generic semantic explanations unless clearly necessary."
+        ),
+
+        "geometry": (
+            "Focus on geometric inconsistencies such as unnatural facial proportions, "
+            "head pose mismatch, gaze inconsistency, perspective errors, "
+            "or spatial misalignment between facial structure and body orientation. "
+            "Avoid relying purely on texture-related descriptions."
+        ),
+
+        "semantic": (
+            "Focus on inconsistencies between the caption and the visible scene, "
+            "including identity mismatch, implausible entity relationships, "
+            "event contradiction, or semantic inconsistencies across modalities. "
+            "Avoid excessive low-level forensic terminology."
+        ),
+
+        "contextual": (
+            "Focus on whether the social, journalistic, or situational context "
+            "described in the caption aligns naturally with the visual scene. "
+            "Consider contextual plausibility rather than low-level artifacts."
+        ),
+
+        "photographic": (
+            "Focus on inconsistencies in photographic properties such as "
+            "depth of field, motion blur, lighting coherence, perspective consistency, "
+            "or camera-related visual behavior across the scene."
+        ),
+
+        "consistency": (
+            "Focus on explaining why the image and caption appear naturally aligned "
+            "without visible contradictions or suspicious inconsistencies."
+        )
+    }
+
+    return reasoning_map.get(reasoning_family, reasoning_map["artifact"])
+
+
+def build_prompt_v3(
+    fake_cls: str,
+    fake_modality: str,
+    caption: str,
+    fake_image_box: Any,
+    fake_text_pos: Any,
+    bert_view: Optional["BertTokenView"],
+    image_path: str = "",
+) -> str:
+    """
+    V3:
+    - reasoning family supervision
+    - family-aware sampling
+    - anti-template rationale generation
+    - sparse evidence preference
+    - strong grounding constraints
+    """
+
+    is_fake = (str(fake_cls).lower() != "orig")
+    verdict = "FAKE" if is_fake else "REAL"
+
+    box_str = format_box_xyxy(fake_image_box)
+    pos_list = fake_text_pos if isinstance(fake_text_pos, list) else []
+
+    # ------------------------------------------------
+    # reasoning family
+    # ------------------------------------------------
+    reasoning_family = sample_reasoning_family(
+        fake_cls,
+        fake_modality,
+        image_path=image_path
+    )
+
+    reasoning_instruction = get_reasoning_instruction(
+        reasoning_family
+    )
+
+    # ------------------------------------------------
+    # bert block
+    # ------------------------------------------------
+    bert_block = ""
+
+    if bert_view is not None:
+        bert_block = (
+            f"\n- Text Context for reference:\n"
+            f"{bert_view.marked_context}"
+        )
+
+    # ------------------------------------------------
+    # modality guidance
+    # ------------------------------------------------
+    if fake_modality == "text":
+
+        modality_guidance = (
+            "CRITICAL: The IMAGE is completely REAL. "
+            "The manipulation exists ONLY in the TEXT. "
+            "DO NOT claim visual artifacts in the image. "
+            "Ground your reasoning in textual inconsistencies, "
+            "semantic contradictions, entity mismatch, or contextual implausibility."
+        )
+
+    elif fake_modality == "image":
+
+        modality_guidance = (
+            "CRITICAL: The TEXT is completely REAL. "
+            "The manipulation exists ONLY in the IMAGE. "
+            "DO NOT claim the caption is false or illogical. "
+            "Ground your reasoning strictly in visual evidence."
+        )
+
+    elif fake_modality == "both":
+
+        modality_guidance = (
+            "CRITICAL: BOTH the image and the text are manipulated. "
+            "Provide one grounded visual observation and one grounded "
+            "cross-modal inconsistency."
+        )
+
+    else:
+
+        modality_guidance = (
+            "CRITICAL: Both the image and text are REAL. "
+            "Explain briefly why the image-caption pair appears "
+            "naturally consistent and free of obvious contradictions."
+        )
+
+    # ------------------------------------------------
+    # tone sampling
+    # ------------------------------------------------
+    tones = [
+        "Use a concise forensic tone.",
+        "Use a restrained analytical tone.",
+        "Use a direct evidence-focused tone.",
+        "Use a natural multimodal reasoning style.",
+    ]
+
+    sampled_tone = random.choice(tones)
+
+    # ------------------------------------------------
+    # sparse rationale instruction
+    # ------------------------------------------------
+    sparse_instruction = random.choice([
+        "Prioritize the single most discriminative observation.",
+        "Focus on one or two highly grounded observations only.",
+        "Avoid listing multiple weak anomalies.",
+    ])
+
+    # ------------------------------------------------
+    # prompt
+    # ------------------------------------------------
+    prompt = f"""
+You are a multimodal reasoning assistant specialized in media authenticity analysis.
+
+Your task is to evaluate whether the provided image-caption pair is authentic or manipulated.
+
+Rules for your analysis:
+
+1. Modality Constraint:
+{modality_guidance}
+
+2. Assigned Reasoning Perspective:
+Reasoning Family = {reasoning_family}
+
+{reasoning_instruction}
+
+3. Grounding Constraints:
+- IF `fake_image_box` is NOT `[]`, you MUST naturally reference the exact coordinates somewhere in the explanation.
+- IF `fake_image_box` is `[]`, you MUST NOT invent or mention coordinates.
+- Apply the same rule to `fake_text_pos`.
+- Never hallucinate evidence outside the provided modality constraints.
+
+4. Rationale Style:
+- Write a short free-flowing paragraph (~40-80 words).
+- DO NOT use numbered lists.
+- Avoid repetitive forensic buzzwords unless directly supported by evidence.
+- {sparse_instruction}
+- {sampled_tone}
+
+5. Important:
+- Focus on concrete observations rather than generic manipulation claims.
+- The rationale should sound like grounded multimodal reasoning, NOT a template.
+- Different samples may require different reasoning paths.
+
+Inputs:
+- Target Verdict: {verdict}
+- Category: {fake_cls}
+- Caption: "{caption}"
+- fake_image_box: {box_str}
+- fake_text_pos: {pos_list}
+{bert_block}
+
+Output Format (Exactly 3 lines, no extra line breaks):
+
+Verdict: {verdict}
+Category: {fake_cls}
+Evidence & Location: <Write the explanation here>
+"""
+
+    return prompt
+
+
 # 将组装 Message 的函数也放过来
 def build_messages_multimodal(
     prompt_text: str,
@@ -225,13 +548,14 @@ if __name__ == "__main__":
     print("=" * 60)
     print("▶ 测试用例 1: FAKE (造假图片 - face_swap)")
     print("=" * 60)
-    prompt_fake = build_prompt_v1(
+    prompt_fake = build_prompt_v3(
         fake_cls="face_swap",
         fake_modality="image",
         caption="What s the biggest surprise from the JPMorgan Senate report",
         fake_image_box=[159.0, 18.0, 208.0, 79.0],  # 有坐标框
         fake_text_pos=[],
-        bert_view=None  # 因为是 image 造假，文本一般没有上下文
+        bert_view=None,  # 因为是 image 造假，文本一般没有上下文
+        image_path = "DGM4/manipulation/infoswap/995762-043201-infoswap.jpg"
     )
     print(prompt_fake)
     print("\n\n")
@@ -239,12 +563,13 @@ if __name__ == "__main__":
     print("=" * 60)
     print("▶ 测试用例 2: REAL (真实原图 - orig)")
     print("=" * 60)
-    prompt_real = build_prompt_v2(
+    prompt_real = build_prompt_v3(
         fake_cls="orig",
         fake_modality="none",
         caption="Tony Nicklinson with his wife Jane Nicklinson.",
         fake_image_box=[],  # orig 类别没有坐标框
         fake_text_pos=[],
-        bert_view=None
+        bert_view=None,
+        image_path="DGM4/manipulation/infoswap/995762-043201.jpg"
     )
     print(prompt_real)

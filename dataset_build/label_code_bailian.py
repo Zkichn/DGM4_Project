@@ -332,8 +332,8 @@ async def async_main():
     # <-- 修改点 1：使用阿里云百炼的 OpenAI 兼容地址
     parser.add_argument("--api_base", default="https://dashscope.aliyuncs.com/compatible-mode/v1", type=str)
 
-    # <-- 修改点 2：使用百炼上的视觉模型（例如 qwen-vl-max 或 qwen-vl-plus）
-    parser.add_argument("--model", default="qwen3-vl-235b-a22b-thinking", type=str)
+    # <-- 修改点 2：使用百炼上的视觉模型（例如 qwen-vl-max 或 qwen-vl-plus） "qwen3-vl-235b-a22b-thinking"
+    parser.add_argument("--model", default="gpt-5.5", type=str)
 
     # <-- 修改点 3：增加 API Key 读取，默认从环境变量读取，也可以通过命令行传入
     parser.add_argument("--api_key", default=os.environ.get("DASHSCOPE_API_KEY", ""), type=str, help="你的百炼 API Key")
