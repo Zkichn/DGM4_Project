@@ -279,7 +279,16 @@ async def process_single_annotation(
                 crop = crop_with_margin(img, fake_image_box, margin_ratio=args.bbox_margin)
                 crop_bytes, crop_mime = image_to_bytes(crop, prefer="JPEG")
                 crop_data_url = to_data_url(crop_bytes, crop_mime)
-                prompt_text = "（提示：你会收到两张图，第2张是fake_image_box周围裁剪图，请优先分析第2张细节。）\n" + prompt_text
+
+                crop_note = (
+                    "Note: You will receive two images. The first image is the full image, "
+                    "and the second image is a crop around the fake_image_box. Use the second image "
+                    "to inspect local visual details, but cross-check your judgment with the full image. "
+                    "Do not mention that two images were provided. Keep the final answer in the required "
+                    "exactly 3-line English format.\n\n"
+                )
+
+                prompt_text = crop_note + prompt_text
             except Exception:
                 crop_data_url = None
 
@@ -348,7 +357,7 @@ async def async_main():
     parser.add_argument("--retry", default=3, type=int)
     parser.add_argument("--crop_bbox", action="store_true")
     parser.add_argument("--bbox_margin", default=0.25, type=float)
-    parser.add_argument("--max_samples", default=10, type=int)
+    parser.add_argument("--max_samples", default=10000, type=int)
     parser.add_argument("--bert_name", default="bert-base-uncased", type=str)
     args = parser.parse_args()
 

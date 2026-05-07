@@ -170,7 +170,19 @@ Rules for your analysis:
    - IF `fake_image_box` is NOT `[]`: You MUST explicitly quote the exact coordinates in your text.
    - IF `fake_image_box` is `[]` (e.g., in 'orig' category): You MUST NOT invent, hallucinate, or mention any coordinates.
    - Apply the same rule for `fake_text_pos` if provided.
-4. Anti-Homogenization & Tone: {random_perspective} Diversify your vocabulary. You may use terms like "unnatural blending" or "lighting inconsistencies" if they are the most accurate, but avoid overusing them as generic templates. Prioritize highly specific and varied descriptive language.
+4. Anti-Homogenization & Tone:
+   - {random_perspective}
+   - Diversify your vocabulary.
+   - You may use terms like "unnatural blending" or "lighting inconsistencies" if they are the most accurate, but avoid overusing them as generic templates.
+   - Prioritize concrete visual evidence such as texture, grain, compression, edge transition, lighting, shadow, or image-caption consistency.
+   - Avoid overly fine-grained anatomical claims unless they are clearly visible.
+   - Do not rely on external identity knowledge, biographical information, or unverifiable public-event knowledge.
+5. Strict Output Format:
+   - Your entire answer MUST contain exactly 3 lines.
+   - The phrase "Evidence & Location:" MUST appear exactly once in the entire answer.
+   - "Evidence & Location:" MUST appear only at the beginning of the third line.
+   - DO NOT repeat "Evidence & Location:" inside the explanation.
+   - DO NOT add any extra headings, blank lines, bullet points, or additional fields.
 Inputs:
 - Target Verdict: {verdict}
 - Category: {fake_cls}
@@ -516,7 +528,7 @@ def build_messages_multimodal(
         "You are an expert multimodal forensic analyst. "
         "You must evaluate both the image and the text caption for inconsistencies or manipulations. "
         "Strictly follow the requested 3-line output format. "
-        "Keep your explanations natural, highly diverse, and strictly grounded in the provided evidence. "
+        "Keep your explanations natural, concise, and strictly grounded in the provided evidence. "
         "NEVER hallucinate artifacts or bounding boxes."
     )
     system = {"role": "system", "content": system_content}
