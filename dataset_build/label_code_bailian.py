@@ -357,7 +357,7 @@ async def async_main():
     parser.add_argument("--retry", default=3, type=int)
     parser.add_argument("--crop_bbox", action="store_true")
     parser.add_argument("--bbox_margin", default=0.25, type=float)
-    parser.add_argument("--max_samples", default=10000, type=int)
+    parser.add_argument("--max_samples", default=25000, type=int)
     parser.add_argument("--bert_name", default="bert-base-uncased", type=str)
     args = parser.parse_args()
 
