@@ -1,0 +1,53 @@
+### model
+model_name_or_path: Qwen/Qwen3-VL-8B-Instruct
+image_max_pixels: 65536
+video_max_pixels: 16384
+trust_remote_code: true
+
+### method
+stage: sft
+do_train: true
+finetuning_type: lora
+quantization_bit: 4
+lora_rank: 8
+lora_alpha: 16
+lora_dropout: 0.05
+lora_target: all
+
+### dataset
+dataset_dir: ../../datasets/dgm4_instruct
+media_dir: D:/
+dataset: dgm4_instruct_train
+eval_dataset: dgm4_instruct_val
+template: qwen3_vl_nothink
+default_system: "You are a multimodal forensic assistant. Your task is to assess whether an image-caption pair is authentic or manipulated. Check both visual evidence and caption-image consistency. If the sample is fake, identify the manipulation category and provide exact grounding fields for the manipulated image region and/or manipulated text token positions. If a modality is not manipulated, output an empty list for that grounding field. Always respond strictly in this five-line format: Verdict: [REAL or FAKE] Category: [category] Fake Image Box: [box or []] Fake Text Pos: [positions or []] Evidence: [concise grounded explanation]"
+cutoff_len: 1024
+max_samples: 16
+preprocessing_num_workers: 1
+dataloader_num_workers: 0
+
+### output
+output_dir: ../../outputs/qwen3-vl-8b/dgm4-instruct/debug-local-4060
+logging_dir: ../../logs/qwen3-vl-8b-dgm4-instruct-debug-local-4060
+logging_steps: 1
+save_steps: 5
+plot_loss: true
+overwrite_output_dir: true
+save_only_model: false
+report_to: none
+
+### train
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 1
+learning_rate: 1.0e-4
+max_steps: 5
+lr_scheduler_type: cosine
+warmup_ratio: 0.0
+bf16: false
+fp16: true
+ddp_timeout: 180000000
+resume_from_checkpoint: null
+
+### eval
+per_device_eval_batch_size: 1
+eval_strategy: "no"
