@@ -1,7 +1,7 @@
 # LLaMA-Factory (cloned separately)
 training_models/src/LLaMA-Factory/
 # Output and logs
-training_models/outputs/
+# training_models/outputs/
 training_models/logs/
 # Python cache
 __pycache__/
