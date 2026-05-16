@@ -13,3 +13,9 @@ __pycache__/
 Thumbs.db
 dataset_build/train_label_v3_grounded.jsonl
 training_models/datasets/dgm4_instruct_backup/
+
+# Training intermediate checkpoints (large, only needed for resume on same host)
+training_models/outputs/**/checkpoint-*/
+
+# Eval log files
+training_models/logs/

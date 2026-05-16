@@ -1,0 +1,932 @@
+{
+  "summary": {
+    "samples": 50,
+    "batch_size": 16,
+    "inference_time_s": 59.39841208793223,
+    "seconds_per_sample": 1.1879682417586446,
+    "AUC": 0.8590831918505943,
+    "EER": 0.24448217317487267,
+    "ACC": 0.86,
+    "mAP": 0.3936568986568987,
+    "CF1": 0.46569281496817727,
+    "OF1": 0.72,
+    "IoUmean": 0.7250724833526297,
+    "IoU50": 0.8888888888888888,
+    "IoU75": 0.5555555555555556,
+    "Tok_Precision": 0.8675757575757577,
+    "Tok_Recall": 0.8576666666666668,
+    "Tok_F1": 0.8625927552269043,
+    "per_class": {
+      "face_attribute": {
+        "count": 5,
+        "parsed": 5,
+        "verdict_acc": 1.0,
+        "category_acc": 0.8
+      },
+      "face_attribute&text_attribute": {
+        "count": 1,
+        "parsed": 1,
+        "verdict_acc": 1.0,
+        "category_acc": 0.0
+      },
+      "face_attribute&text_swap": {
+        "count": 4,
+        "parsed": 4,
+        "verdict_acc": 0.75,
+        "category_acc": 0.5
+      },
+      "face_swap": {
+        "count": 15,
+        "parsed": 15,
+        "verdict_acc": 0.6,
+        "category_acc": 0.4666666666666667
+      },
+      "face_swap&text_swap": {
+        "count": 2,
+        "parsed": 2,
+        "verdict_acc": 1.0,
+        "category_acc": 0.0
+      },
+      "orig": {
+        "count": 19,
+        "parsed": 19,
+        "verdict_acc": 1.0,
+        "category_acc": 1.0
+      },
+      "text_attribute": {
+        "count": 3,
+        "parsed": 3,
+        "verdict_acc": 1.0,
+        "category_acc": 1.0
+      },
+      "text_swap": {
+        "count": 1,
+        "parsed": 1,
+        "verdict_acc": 1.0,
+        "category_acc": 1.0
+      }
+    }
+  },
+  "details": [
+    {
+      "id": 1074917,
+      "gt_verdict": "FAKE",
+      "gt_category": "face_attribute&text_swap",
+      "bin_score": 0.7772998809814453,
+      "raw_output": "Verdict: FAKE\nCategory: face_attribute&text_swap\nFake Image Box: [244, 55, 311, 148]\nFake Text Pos: [0, 1, 2, 3, 4, 5, 10, 11, 13, 14, 15, 16]\nEvidence: The face region at \"[xmin=244, ymin=55, xmax=311, ymax=148]\" shows a pasted look, with harsher edge transitions and tonal mismatch against the surrounding head and suit. The caption is also swapped: the flagged text positions \"[0, 1, 2, 3, 4, 5, 10, 11, 13, 14, 15, 16]\" describe a Stratford production casting, while the image is a black",
+      "parsed": {
+        "verdict": "FAKE",
+        "category": "face_attribute&text_swap",
+        "fake_image_box_pred": [
+          244.0,
+          55.0,
+          311.0,
+          148.0
+        ],
+        "fake_text_pos_pred": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          10,
+          11,
+          13,
+          14,
+          15,
+          16
+        ],
+        "evidence": "The face region at \"[xmin=244, ymin=55, xmax=311, ymax=148]\" shows a pasted look, with harsher edge transitions and tonal mismatch against the surrounding head and suit. The caption is also swapped: the flagged text positions \"[0, 1, 2, 3, 4, 5, 10, 11, 13, 14, 15, 16]\" describe a Stratford production casting, while the image is a black"
+      }
+    },
+    {
+      "id": 283359,
+      "gt_verdict": "FAKE",
+      "gt_category": "text_swap",
+      "bin_score": 0.8175744414329529,
+      "raw_output": "Verdict: FAKE\nCategory: text_swap\nFake Image Box: []\nFake Text Pos: [2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13]\nEvidence: The image is a real outdoor scene of a suited man walking with a woman under a covered walkway, with cars and bystanders in the background. The caption’s highlighted tokens at fake_text_pos [2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13] introduce a football narrative about “Forsett’s running,” the Ravens, and Ray Rice, which is not visually supported.",
+      "parsed": {
+        "verdict": "FAKE",
+        "category": "text_swap",
+        "fake_image_box_pred": [],
+        "fake_text_pos_pred": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          10,
+          11,
+          12,
+          13
+        ],
+        "evidence": "The image is a real outdoor scene of a suited man walking with a woman under a covered walkway, with cars and bystanders in the background. The caption’s highlighted tokens at fake_text_pos [2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13] introduce a football narrative about “Forsett’s running,” the Ravens, and Ray Rice, which is not visually supported."
+      }
+    },
+    {
+      "id": 305380,
+      "gt_verdict": "REAL",
+      "gt_category": "orig",
+      "bin_score": 0.7549149990081787,
+      "raw_output": "Verdict: REAL\nCategory: orig\nFake Image Box: []\nFake Text Pos: []\nEvidence: The caption naturally matches the unaltered scene: two people stand before a construction-site backdrop with hands pressed into a wet, reflective surface consistent with cement during a building dedication. The cool, overcast color temperature, soft frontal illumination, and diffuse ambient shadows are coherent across the figures and foreground. Edges, grain, and compression appear uniform, with no manipulation detected.",
+      "parsed": {
+        "verdict": "REAL",
+        "category": "orig",
+        "fake_image_box_pred": [],
+        "fake_text_pos_pred": [],
+        "evidence": "The caption naturally matches the unaltered scene: two people stand before a construction-site backdrop with hands pressed into a wet, reflective surface consistent with cement during a building dedication. The cool, overcast color temperature, soft frontal illumination, and diffuse ambient shadows are coherent across the figures and foreground. Edges, grain, and compression appear uniform, with no manipulation detected."
+      }
+    },
+    {
+      "id": 946721,
+      "gt_verdict": "REAL",
+      "gt_category": "orig",
+      "bin_score": 0.07585817575454712,
+      "raw_output": "Verdict: REAL\nCategory: orig\nFake Image Box: []\nFake Text Pos: []\nEvidence: The caption naturally matches the unaltered image, showing a woman in a red dress grooming or preparing beside a mirror, consistent with a Mad Men character still. No manipulation is detected; edges around the figure, hands, mirror reflection, and background fixtures show coherent grain, lighting, compression, and shadow transitions without suspicious halos, cutout borders, or unnatural blending.",
+      "parsed": {
+        "verdict": "REAL",
+        "category": "orig",
+        "fake_image_box_pred": [],
+        "fake_text_pos_pred": [],
+        "evidence": "The caption naturally matches the unaltered image, showing a woman in a red dress grooming or preparing beside a mirror, consistent with a Mad Men character still. No manipulation is detected; edges around the figure, hands, mirror reflection, and background fixtures show coherent grain, lighting, compression, and shadow transitions without suspicious halos, cutout borders, or unnatural blending."
+      }
+    },
+    {
+      "id": 234370,
+      "gt_verdict": "REAL",
+      "gt_category": "orig",
+      "bin_score": 0.531209409236908,
+      "raw_output": "Verdict: REAL\nCategory: orig\nFake Image Box: []\nFake Text Pos: []\nEvidence: The caption naturally matches the scene: floral tributes, candles, and red heart tokens are arranged in front of a large printed portrait at what appears to be a public vigil. The image shows consistent grain, compression, and texture sharpness across the grass, flowers, objects, and poster, with no suspicious edge breaks, lighting mismatches, or unnatural blending. No manipulation is detected.",
+      "parsed": {
+        "verdict": "REAL",
+        "category": "orig",
+        "fake_image_box_pred": [],
+        "fake_text_pos_pred": [],
+        "evidence": "The caption naturally matches the scene: floral tributes, candles, and red heart tokens are arranged in front of a large printed portrait at what appears to be a public vigil. The image shows consistent grain, compression, and texture sharpness across the grass, flowers, objects, and poster, with no suspicious edge breaks, lighting mismatches, or unnatural blending. No manipulation is detected."
+      }
+    },
+    {
+      "id": 466221,
+      "gt_verdict": "FAKE",
+      "gt_category": "face_swap",
+      "bin_score": 0.8807970285415649,
+      "raw_output": "Verdict: FAKE\nCategory: face_swap\nFake Image Box: [199, 55, 232, 97]\nFake Text Pos: []\nEvidence: The face within [xmin=199, ymin=55, xmax=232, ymax=97] appears visually mismatched to the surrounding black-and-white scene: its tonal balance is smoother and slightly flatter than the grainy suit, hair, and background, with a soft edge transition around the head. The illumination on the face also feels more frontal and even than the ambient side lighting, suggesting a face-swap insertion.",
+      "parsed": {
+        "verdict": "FAKE",
+        "category": "face_swap",
+        "fake_image_box_pred": [
+          199.0,
+          55.0,
+          232.0,
+          97.0
+        ],
+        "fake_text_pos_pred": [],
+        "evidence": "The face within [xmin=199, ymin=55, xmax=232, ymax=97] appears visually mismatched to the surrounding black-and-white scene: its tonal balance is smoother and slightly flatter than the grainy suit, hair, and background, with a soft edge transition around the head. The illumination on the face also feels more frontal and even than the ambient side lighting, suggesting a face-swap insertion."
+      }
+    },
+    {
+      "id": 1007886,
+      "gt_verdict": "REAL",
+      "gt_category": "orig",
+      "bin_score": 0.531209409236908,
+      "raw_output": "Verdict: REAL\nCategory: orig\nFake Image Box: []\nFake Text Pos: []\nEvidence: The caption naturally matches the unaltered split image, with Michel Platini shown on the left and Sepp Blatter on the right. No manipulation is detected: the grain, compression noise, and texture sharpness remain consistent across both portraits, with clean but ordinary panel boundaries and no suspicious edge blending, lighting mismatch, or pasted-in appearance.",
+      "parsed": {
+        "verdict": "REAL",
+        "category": "orig",
+        "fake_image_box_pred": [],
+        "fake_text_pos_pred": [],
+        "evidence": "The caption naturally matches the unaltered split image, with Michel Platini shown on the left and Sepp Blatter on the right. No manipulation is detected: the grain, compression noise, and texture sharpness remain consistent across both portraits, with clean but ordinary panel boundaries and no suspicious edge blending, lighting mismatch, or pasted-in appearance."
+      }
+    },
+    {
+      "id": 108707,
+      "gt_verdict": "FAKE",
+      "gt_category": "face_swap",
+      "bin_score": 0.622459352016449,
+      "raw_output": "Verdict: REAL\nCategory: orig\nFake Image Box: []\nFake Text Pos: []\nEvidence: The black-and-white image shows two folk performers seated closely, with one holding an acoustic guitar, matching the caption’s description of Joan Baez and Bob Dylan performing. The soft focus, grain, lighting, and edge transitions are consistent across the frame, with no visible splicing, unnatural blending, or caption-image conflict. No manipulation is detected.",
+      "parsed": {
+        "verdict": "REAL",
+        "category": "orig",
+        "fake_image_box_pred": [],
+        "fake_text_pos_pred": [],
+        "evidence": "The black-and-white image shows two folk performers seated closely, with one holding an acoustic guitar, matching the caption’s description of Joan Baez and Bob Dylan performing. The soft focus, grain, lighting, and edge transitions are consistent across the frame, with no visible splicing, unnatural blending, or caption-image conflict. No manipulation is detected."
+      }
+    },
+    {
+      "id": 1605313,
+      "gt_verdict": "REAL",
+      "gt_category": "orig",
+      "bin_score": 0.7549149990081787,
+      "raw_output": "Verdict: REAL\nCategory: orig\nFake Image Box: []\nFake Text Pos: []\nEvidence: The caption naturally fits the unaltered scene: several people are gathered on a boat or dock, with one seated figure appearing to receive care or attention. The cool, overcast color temperature, soft illumination, and diffuse ambient shadows are consistent across the water, deck, clothing, and vessel. Edges, grain, and compression look uniform, with no manipulation detected.",
+      "parsed": {
+        "verdict": "REAL",
+        "category": "orig",
+        "fake_image_box_pred": [],
+        "fake_text_pos_pred": [],
+        "evidence": "The caption naturally fits the unaltered scene: several people are gathered on a boat or dock, with one seated figure appearing to receive care or attention. The cool, overcast color temperature, soft illumination, and diffuse ambient shadows are consistent across the water, deck, clothing, and vessel. Edges, grain, and compression look uniform, with no manipulation detected."
+      }
+    },
+    {
+      "id": 1594685,
+      "gt_verdict": "REAL",
+      "gt_category": "orig",
+      "bin_score": 0.13296423852443695,
+      "raw_output": "Verdict: REAL\nCategory: orig\nFake Image Box: []\nFake Text Pos: []\nEvidence: The caption naturally matches the unaltered scene: two officials stand at EU-branded podiums with US and EU flags, and the backdrop reads “Fourth round of negotiations” in Brussels, March 2014. Cool blue stage lighting is consistent across faces, flags, and signage, with soft ambient shadows and uniform compression grain. No manipulation is detected.",
+      "parsed": {
+        "verdict": "REAL",
+        "category": "orig",
+        "fake_image_box_pred": [],
+        "fake_text_pos_pred": [],
+        "evidence": "The caption naturally matches the unaltered scene: two officials stand at EU-branded podiums with US and EU flags, and the backdrop reads “Fourth round of negotiations” in Brussels, March 2014. Cool blue stage lighting is consistent across faces, flags, and signage, with soft ambient shadows and uniform compression grain. No manipulation is detected."
+      }
+    },
+    {
+      "id": 149266,
+      "gt_verdict": "REAL",
+      "gt_category": "orig",
+      "bin_score": 0.4073334336280823,
+      "raw_output": "Verdict: REAL\nCategory: orig\nFake Image Box: []\nFake Text Pos: []\nEvidence: The caption naturally matches the image, showing Donald Trump speaking into a microphone in a debate-like setting. No manipulation is detected: the subject’s edges blend consistently with the background, with uniform compression softness, coherent lighting, and no visible haloing, cutout seams, or mismatched grain around the face, hands, or microphone.",
+      "parsed": {
+        "verdict": "REAL",
+        "category": "orig",
+        "fake_image_box_pred": [],
+        "fake_text_pos_pred": [],
+        "evidence": "The caption naturally matches the image, showing Donald Trump speaking into a microphone in a debate-like setting. No manipulation is detected: the subject’s edges blend consistently with the background, with uniform compression softness, coherent lighting, and no visible haloing, cutout seams, or mismatched grain around the face, hands, or microphone."
+      }
+    },
+    {
+      "id": 59313,
+      "gt_verdict": "FAKE",
+      "gt_category": "face_swap",
+      "bin_score": 0.622459352016449,
+      "raw_output": "Verdict: FAKE\nCategory: face_swap\nFake Image Box: [93, 39, 121, 78]\nFake Text Pos: []\nEvidence: The face within [xmin=93, ymin=39, xmax=121, ymax=78] shows a pasted quality: its edges transition too smoothly into the hair and neck, with slightly mismatched sharpness compared with the surrounding clothing and background. The facial lighting and skin texture also appear flatter than nearby areas, creating a subtle halo-like boundary that supports a face-swap manipulation.",
+      "parsed": {
+        "verdict": "FAKE",
+        "category": "face_swap",
+        "fake_image_box_pred": [
+          93.0,
+          39.0,
+          121.0,
+          78.0
+        ],
+        "fake_text_pos_pred": [],
+        "evidence": "The face within [xmin=93, ymin=39, xmax=121, ymax=78] shows a pasted quality: its edges transition too smoothly into the hair and neck, with slightly mismatched sharpness compared with the surrounding clothing and background. The facial lighting and skin texture also appear flatter than nearby areas, creating a subtle halo-like boundary that supports a face-swap manipulation."
+      }
+    },
+    {
+      "id": 673746,
+      "gt_verdict": "FAKE",
+      "gt_category": "face_swap",
+      "bin_score": 0.562176525592804,
+      "raw_output": "Verdict: REAL\nCategory: orig\nFake Image Box: []\nFake Text Pos: []\nEvidence: The caption naturally matches the unaltered image, showing a formal meeting setting with suited attendees and a visible hearing device consistent with a conference environment. No manipulation is detected; the soft focus, grain, compression noise, and edge transitions appear uniform across faces, clothing, and background, with no suspicious halos, pasted boundaries, or lighting mismatches.",
+      "parsed": {
+        "verdict": "REAL",
+        "category": "orig",
+        "fake_image_box_pred": [],
+        "fake_text_pos_pred": [],
+        "evidence": "The caption naturally matches the unaltered image, showing a formal meeting setting with suited attendees and a visible hearing device consistent with a conference environment. No manipulation is detected; the soft focus, grain, compression noise, and edge transitions appear uniform across faces, clothing, and background, with no suspicious halos, pasted boundaries, or lighting mismatches."
+      }
+    },
+    {
+      "id": 1635430,
+      "gt_verdict": "FAKE",
+      "gt_category": "face_attribute",
+      "bin_score": 0.9465966820716858,
+      "raw_output": "Verdict: FAKE\nCategory: face_attribute\nFake Image Box: [206, 30, 290, 141]\nFake Text Pos: []\nEvidence: The face area shows a localized attribute edit: within [xmin=206, ymin=30, xmax=290, ymax=141], the skin texture appears overly smoothed and slightly mismatched against the surrounding head and suit, with softened edge transitions around the cheeks and forehead. The lighting on the facial region also feels flatter than the rest of the scene, indicating image-only manipulation.",
+      "parsed": {
+        "verdict": "FAKE",
+        "category": "face_attribute",
+        "fake_image_box_pred": [
+          206.0,
+          30.0,
+          290.0,
+          141.0
+        ],
+        "fake_text_pos_pred": [],
+        "evidence": "The face area shows a localized attribute edit: within [xmin=206, ymin=30, xmax=290, ymax=141], the skin texture appears overly smoothed and slightly mismatched against the surrounding head and suit, with softened edge transitions around the cheeks and forehead. The lighting on the facial region also feels flatter than the rest of the scene, indicating image-only manipulation."
+      }
+    },
+    {
+      "id": 1275375,
+      "gt_verdict": "FAKE",
+      "gt_category": "face_attribute",
+      "bin_score": 0.9324532747268677,
+      "raw_output": "Verdict: FAKE\nCategory: face_swap\nFake Image Box: [198, 63, 234, 114]\nFake Text Pos: []\nEvidence: The face region shows a pasted quality, with slightly harsh edge transitions around the hairline and cheeks compared with the softer, motion-blurred surrounding scene. Skin texture and facial lighting look smoother and less grain-matched than the shirt and background, creating a subtle halo-like separation at the boundary. The manipulated area is at [xmin=198, ymin=63, xmax=234, ymax=114].",
+      "parsed": {
+        "verdict": "FAKE",
+        "category": "face_swap",
+        "fake_image_box_pred": [
+          198.0,
+          63.0,
+          234.0,
+          114.0
+        ],
+        "fake_text_pos_pred": [],
+        "evidence": "The face region shows a pasted quality, with slightly harsh edge transitions around the hairline and cheeks compared with the softer, motion-blurred surrounding scene. Skin texture and facial lighting look smoother and less grain-matched than the shirt and background, creating a subtle halo-like separation at the boundary. The manipulated area is at [xmin=198, ymin=63, xmax=234, ymax=114]."
+      }
+    },
+    {
+      "id": 1181218,
+      "gt_verdict": "REAL",
+      "gt_category": "orig",
+      "bin_score": 0.7772998809814453,
+      "raw_output": "Verdict: REAL\nCategory: orig\nFake Image Box: []\nFake Text Pos: []\nEvidence: The caption naturally matches the unaltered scene: an England player in white is contesting the ball with China players in red, consistent with a goal-scoring moment. No manipulation is detected; the image shows even compression grain, coherent noise across players and background, sharp but natural edge transitions, and consistent lighting and motion softness throughout.",
+      "parsed": {
+        "verdict": "REAL",
+        "category": "orig",
+        "fake_image_box_pred": [],
+        "fake_text_pos_pred": [],
+        "evidence": "The caption naturally matches the unaltered scene: an England player in white is contesting the ball with China players in red, consistent with a goal-scoring moment. No manipulation is detected; the image shows even compression grain, coherent noise across players and background, sharp but natural edge transitions, and consistent lighting and motion softness throughout."
+      }
+    },
+    {
+      "id": 571791,
+      "gt_verdict": "FAKE",
+      "gt_category": "face_attribute&text_swap",
+      "bin_score": 0.7549149990081787,
+      "raw_output": "Verdict: FAKE\nCategory: face_attribute\nFake Image Box: [288, 29, 323, 74]\nFake Text Pos: []\nEvidence: The face area shows a localized attribute edit: within [xmin=288, ymin=29, xmax=323, ymax=74], the skin texture appears overly smoothed and slightly mismatched against the sharper hairline and surrounding facial edges. The transition around the cheeks and mouth looks softer than the rest of the image, with subtle tonal blending that does not fully match the lighting on the face.",
+      "parsed": {
+        "verdict": "FAKE",
+        "category": "face_attribute",
+        "fake_image_box_pred": [
+          288.0,
+          29.0,
+          323.0,
+          74.0
+        ],
+        "fake_text_pos_pred": [],
+        "evidence": "The face area shows a localized attribute edit: within [xmin=288, ymin=29, xmax=323, ymax=74], the skin texture appears overly smoothed and slightly mismatched against the sharper hairline and surrounding facial edges. The transition around the cheeks and mouth looks softer than the rest of the image, with subtle tonal blending that does not fully match the lighting on the face."
+      }
+    },
+    {
+      "id": 1638501,
+      "gt_verdict": "FAKE",
+      "gt_category": "face_swap",
+      "bin_score": 0.9740425944328308,
+      "raw_output": "Verdict: FAKE\nCategory: face_swap\nFake Image Box: [347, 38, 396, 99]\nFake Text Pos: []\nEvidence: The face within [xmin=347, ymin=38, xmax=396, ymax=99] shows a pasted quality: its edges transition too abruptly into the surrounding hair and background, with a slightly different grain and compression than the adjacent clothing and nearby faces. The facial lighting also feels flatter than the strong outdoor highlights on others, creating a subtle halo-like mismatch around the swapped region.",
+      "parsed": {
+        "verdict": "FAKE",
+        "category": "face_swap",
+        "fake_image_box_pred": [
+          347.0,
+          38.0,
+          396.0,
+          99.0
+        ],
+        "fake_text_pos_pred": [],
+        "evidence": "The face within [xmin=347, ymin=38, xmax=396, ymax=99] shows a pasted quality: its edges transition too abruptly into the surrounding hair and background, with a slightly different grain and compression than the adjacent clothing and nearby faces. The facial lighting also feels flatter than the strong outdoor highlights on others, creating a subtle halo-like mismatch around the swapped region."
+      }
+    },
+    {
+      "id": 459922,
+      "gt_verdict": "REAL",
+      "gt_category": "orig",
+      "bin_score": 0.622459352016449,
+      "raw_output": "Verdict: REAL\nCategory: orig\nFake Image Box: []\nFake Text Pos: []\nEvidence: The caption naturally matches the scene: uniformed, helmeted personnel stand in a street setting while a civilian passes nearby, consistent with reported use of force by authorities. The image shows uniform blur, grain, and compression across people and background, with no suspicious edge breaks, pasted textures, or lighting mismatches. No manipulation is detected.",
+      "parsed": {
+        "verdict": "REAL",
+        "category": "orig",
+        "fake_image_box_pred": [],
+        "fake_text_pos_pred": [],
+        "evidence": "The caption naturally matches the scene: uniformed, helmeted personnel stand in a street setting while a civilian passes nearby, consistent with reported use of force by authorities. The image shows uniform blur, grain, and compression across people and background, with no suspicious edge breaks, pasted textures, or lighting mismatches. No manipulation is detected."
+      }
+    },
+    {
+      "id": 1627742,
+      "gt_verdict": "FAKE",
+      "gt_category": "face_swap",
+      "bin_score": 0.13296423852443695,
+      "raw_output": "Verdict: REAL\nCategory: orig\nFake Image Box: []\nFake Text Pos: []\nEvidence: The caption naturally matches the unaltered scene: three men are seated behind a prominent accordion-like instrument, consistent with discussion of selling it. No manipulation is detected; the image shows even compression grain, coherent noise across faces, clothing, table, and brick background, with stable edge transitions and matching indoor lighting around the central object.",
+      "parsed": {
+        "verdict": "REAL",
+        "category": "orig",
+        "fake_image_box_pred": [],
+        "fake_text_pos_pred": [],
+        "evidence": "The caption naturally matches the unaltered scene: three men are seated behind a prominent accordion-like instrument, consistent with discussion of selling it. No manipulation is detected; the image shows even compression grain, coherent noise across faces, clothing, table, and brick background, with stable edge transitions and matching indoor lighting around the central object."
+      }
+    },
+    {
+      "id": 84190,
+      "gt_verdict": "FAKE",
+      "gt_category": "face_attribute",
+      "bin_score": 0.9399133324623108,
+      "raw_output": "Verdict: FAKE\nCategory: face_attribute\nFake Image Box: [76, 19, 124, 82]\nFake Text Pos: []\nEvidence: The face area inside [xmin=76, ymin=19, xmax=124, ymax=82] shows a noticeably different texture from the surrounding scene: the skin and glasses look smoother and sharper than the grainier, compressed background, with slightly abrupt edge transitions around the forehead and cheeks. The local noise pattern does not blend naturally with the adjacent hair, suit, and nearby faces, suggesting an alter",
+      "parsed": {
+        "verdict": "FAKE",
+        "category": "face_attribute",
+        "fake_image_box_pred": [
+          76.0,
+          19.0,
+          124.0,
+          82.0
+        ],
+        "fake_text_pos_pred": [],
+        "evidence": "The face area inside [xmin=76, ymin=19, xmax=124, ymax=82] shows a noticeably different texture from the surrounding scene: the skin and glasses look smoother and sharper than the grainier, compressed background, with slightly abrupt edge transitions around the forehead and cheeks. The local noise pattern does not blend naturally with the adjacent hair, suit, and nearby faces, suggesting an altered facial attribute."
+      }
+    },
+    {
+      "id": 1216814,
+      "gt_verdict": "REAL",
+      "gt_category": "orig",
+      "bin_score": 0.3486451506614685,
+      "raw_output": "Verdict: REAL\nCategory: orig\nFake Image Box: []\nFake Text Pos: []\nEvidence: The caption naturally matches the unaltered scene: three attendees are seated at a fashion-show setting, with a runway-like dark stage, audience lighting, and a handbag visible in front. No manipulation is detected; edges around the figures, clothing, and bag show consistent compression, grain, and lighting, with no suspicious haloing, pasted boundaries, or mismatched shadows.",
+      "parsed": {
+        "verdict": "REAL",
+        "category": "orig",
+        "fake_image_box_pred": [],
+        "fake_text_pos_pred": [],
+        "evidence": "The caption naturally matches the unaltered scene: three attendees are seated at a fashion-show setting, with a runway-like dark stage, audience lighting, and a handbag visible in front. No manipulation is detected; edges around the figures, clothing, and bag show consistent compression, grain, and lighting, with no suspicious haloing, pasted boundaries, or mismatched shadows."
+      }
+    },
+    {
+      "id": 256211,
+      "gt_verdict": "FAKE",
+      "gt_category": "face_swap",
+      "bin_score": 0.9241418242454529,
+      "raw_output": "Verdict: FAKE\nCategory: face_attribute&text_swap\nFake Image Box: [84, 90, 134, 152]\nFake Text Pos: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]\nEvidence: The face region at \"[xmin=84, ymin=90, xmax=134, ymax=152]\" shows a pasted-looking transition, with grain and edge softness that do not blend cleanly into the surrounding hair and lighting. The caption is also swapped: tokens at \"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 1",
+      "parsed": {
+        "verdict": "FAKE",
+        "category": "face_attribute&text_swap",
+        "fake_image_box_pred": [
+          84.0,
+          90.0,
+          134.0,
+          152.0
+        ],
+        "fake_text_pos_pred": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14
+        ],
+        "evidence": "The face region at \"[xmin=84, ymin=90, xmax=134, ymax=152]\" shows a pasted-looking transition, with grain and edge softness that do not blend cleanly into the surrounding hair and lighting. The caption is also swapped: tokens at \"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 1"
+      }
+    },
+    {
+      "id": 1460298,
+      "gt_verdict": "REAL",
+      "gt_category": "orig",
+      "bin_score": 0.8175744414329529,
+      "raw_output": "Verdict: REAL\nCategory: orig\nFake Image Box: []\nFake Text Pos: []\nEvidence: The caption naturally matches the unaltered split image: the left portrait shows a man indoors, while the right shows the same man outdoors in cold weather holding a bottle, consistent with leaving home. No manipulation is detected; the grain, compression, edge transitions, and lighting remain coherent within each source photo, with no suspicious blending or mismatched texture.",
+      "parsed": {
+        "verdict": "REAL",
+        "category": "orig",
+        "fake_image_box_pred": [],
+        "fake_text_pos_pred": [],
+        "evidence": "The caption naturally matches the unaltered split image: the left portrait shows a man indoors, while the right shows the same man outdoors in cold weather holding a bottle, consistent with leaving home. No manipulation is detected; the grain, compression, edge transitions, and lighting remain coherent within each source photo, with no suspicious blending or mismatched texture."
+      }
+    },
+    {
+      "id": 488339,
+      "gt_verdict": "REAL",
+      "gt_category": "orig",
+      "bin_score": 0.22270014882087708,
+      "raw_output": "Verdict: REAL\nCategory: orig\nFake Image Box: []\nFake Text Pos: []\nEvidence: The caption naturally matches the unaltered scene: two suited exchange-floor workers are shown amid monitors, trading equipment, and NYSE-style signage. Cool overhead lighting and warmer floor tones are consistent across faces, jackets, and background screens, with soft ambient shadows falling plausibly. Edges, grain, and compression appear uniform, and no manipulation is detected.",
+      "parsed": {
+        "verdict": "REAL",
+        "category": "orig",
+        "fake_image_box_pred": [],
+        "fake_text_pos_pred": [],
+        "evidence": "The caption naturally matches the unaltered scene: two suited exchange-floor workers are shown amid monitors, trading equipment, and NYSE-style signage. Cool overhead lighting and warmer floor tones are consistent across faces, jackets, and background screens, with soft ambient shadows falling plausibly. Edges, grain, and compression appear uniform, and no manipulation is detected."
+      }
+    },
+    {
+      "id": 1140410,
+      "gt_verdict": "FAKE",
+      "gt_category": "face_swap&text_swap",
+      "bin_score": 0.8175744414329529,
+      "raw_output": "Verdict: FAKE\nCategory: text_swap\nFake Image Box: []\nFake Text Pos: [0, 1, 2, 3]\nEvidence: The image itself appears real, with warm stage lighting, blue highlights, and soft ambient shadows on two seated men. The caption’s highlighted tokens at fake_text_pos [0, 1, 2, 3] introduce an unsupported entity “Hugo has the answer,” which does not match the visible scene and adds an illogical claim not grounded in the image.",
+      "parsed": {
+        "verdict": "FAKE",
+        "category": "text_swap",
+        "fake_image_box_pred": [],
+        "fake_text_pos_pred": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "evidence": "The image itself appears real, with warm stage lighting, blue highlights, and soft ambient shadows on two seated men. The caption’s highlighted tokens at fake_text_pos [0, 1, 2, 3] introduce an unsupported entity “Hugo has the answer,” which does not match the visible scene and adds an illogical claim not grounded in the image."
+      }
+    },
+    {
+      "id": 1580384,
+      "gt_verdict": "FAKE",
+      "gt_category": "face_swap",
+      "bin_score": 0.9796676635742188,
+      "raw_output": "Verdict: FAKE\nCategory: face_attribute\nFake Image Box: [258, 50, 398, 238]\nFake Text Pos: []\nEvidence: The face region shows suspicious compositing cues: skin texture inside [xmin=258, ymin=50, xmax=398, ymax=238] appears smoother and slightly mismatched against the surrounding head and neck, with softened edge transitions around the scalp and cheek. The lighting on the facial planes also feels flatter than the adjacent suit and hand, suggesting an altered face attribute rather than a natural ca",
+      "parsed": {
+        "verdict": "FAKE",
+        "category": "face_attribute",
+        "fake_image_box_pred": [
+          258.0,
+          50.0,
+          398.0,
+          238.0
+        ],
+        "fake_text_pos_pred": [],
+        "evidence": "The face region shows suspicious compositing cues: skin texture inside [xmin=258, ymin=50, xmax=398, ymax=238] appears smoother and slightly mismatched against the surrounding head and neck, with softened edge transitions around the scalp and cheek. The lighting on the facial planes also feels flatter than the adjacent suit and hand, suggesting an altered face attribute rather than a natural capture."
+      }
+    },
+    {
+      "id": 171792,
+      "gt_verdict": "FAKE",
+      "gt_category": "face_attribute&text_swap",
+      "bin_score": 0.7310585379600525,
+      "raw_output": "Verdict: FAKE\nCategory: face_attribute&text_swap\nFake Image Box: [79, 60, 158, 160]\nFake Text Pos: [0, 1, 2]\nEvidence: The face region at \"[xmin=79, ymin=60, xmax=158, ymax=160]\" shows smeared texture and soft edge transitions that do not match the surrounding hair and magazine print grain. The caption is also inconsistent: at text positions \"[0, 1, 2]\", it names “Tom Petty left,” but the image shows a single portrait, not two people.",
+      "parsed": {
+        "verdict": "FAKE",
+        "category": "face_attribute&text_swap",
+        "fake_image_box_pred": [
+          79.0,
+          60.0,
+          158.0,
+          160.0
+        ],
+        "fake_text_pos_pred": [
+          0,
+          1,
+          2
+        ],
+        "evidence": "The face region at \"[xmin=79, ymin=60, xmax=158, ymax=160]\" shows smeared texture and soft edge transitions that do not match the surrounding hair and magazine print grain. The caption is also inconsistent: at text positions \"[0, 1, 2]\", it names “Tom Petty left,” but the image shows a single portrait, not two people."
+      }
+    },
+    {
+      "id": 1574190,
+      "gt_verdict": "FAKE",
+      "gt_category": "face_swap",
+      "bin_score": 0.8354835510253906,
+      "raw_output": "Verdict: REAL\nCategory: orig\nFake Image Box: []\nFake Text Pos: []\nEvidence: The caption naturally fits the unaltered scene, showing two people in formal golf-style attire walking outdoors, consistent with a limited edition collection launch at Gleneagles. The image has uniform softness, grain, and compression across faces, clothing, grass, and background, with no suspicious edge halos, pasted textures, or lighting mismatches. No manipulation is detected.",
+      "parsed": {
+        "verdict": "REAL",
+        "category": "orig",
+        "fake_image_box_pred": [],
+        "fake_text_pos_pred": [],
+        "evidence": "The caption naturally fits the unaltered scene, showing two people in formal golf-style attire walking outdoors, consistent with a limited edition collection launch at Gleneagles. The image has uniform softness, grain, and compression across faces, clothing, grass, and background, with no suspicious edge halos, pasted textures, or lighting mismatches. No manipulation is detected."
+      }
+    },
+    {
+      "id": 583891,
+      "gt_verdict": "FAKE",
+      "gt_category": "face_swap",
+      "bin_score": 0.7772998809814453,
+      "raw_output": "Verdict: REAL\nCategory: orig\nFake Image Box: []\nFake Text Pos: []\nEvidence: The caption naturally matches the unaltered scene: two officials stand together in a formal indoor setting with an American flag visible, consistent with a diplomatic meeting context. The image shows uniform low-resolution grain, soft compression, and consistent texture across faces, clothing, curtains, and flag edges. No manipulation is detected, and there are no suspicious seams or mismatched lighting cues.",
+      "parsed": {
+        "verdict": "REAL",
+        "category": "orig",
+        "fake_image_box_pred": [],
+        "fake_text_pos_pred": [],
+        "evidence": "The caption naturally matches the unaltered scene: two officials stand together in a formal indoor setting with an American flag visible, consistent with a diplomatic meeting context. The image shows uniform low-resolution grain, soft compression, and consistent texture across faces, clothing, curtains, and flag edges. No manipulation is detected, and there are no suspicious seams or mismatched lighting cues."
+      }
+    },
+    {
+      "id": 1551244,
+      "gt_verdict": "FAKE",
+      "gt_category": "face_swap",
+      "bin_score": 0.8354835510253906,
+      "raw_output": "Verdict: FAKE\nCategory: face_swap\nFake Image Box: [198, 74, 292, 196]\nFake Text Pos: []\nEvidence: The face inside [xmin=198, ymin=74, xmax=292, ymax=196] shows a pasted quality: its edges soften unevenly into the surrounding hair and collar, with a faint halo and mismatched grain compared with the noisier, lower-resolution scene. The facial lighting and texture look smoother than nearby uniforms and background figures, suggesting a face-swap localized to that region.",
+      "parsed": {
+        "verdict": "FAKE",
+        "category": "face_swap",
+        "fake_image_box_pred": [
+          198.0,
+          74.0,
+          292.0,
+          196.0
+        ],
+        "fake_text_pos_pred": [],
+        "evidence": "The face inside [xmin=198, ymin=74, xmax=292, ymax=196] shows a pasted quality: its edges soften unevenly into the surrounding hair and collar, with a faint halo and mismatched grain compared with the noisier, lower-resolution scene. The facial lighting and texture look smoother than nearby uniforms and background figures, suggesting a face-swap localized to that region."
+      }
+    },
+    {
+      "id": 283812,
+      "gt_verdict": "FAKE",
+      "gt_category": "face_swap&text_swap",
+      "bin_score": 0.7310585379600525,
+      "raw_output": "Verdict: FAKE\nCategory: text_swap\nFake Image Box: []\nFake Text Pos: [0, 1, 2, 3, 4, 5, 10, 11, 12, 13, 14, 15]\nEvidence: The image itself appears coherent, with consistent stage lighting, grain, and sharp suit textures, but the caption’s highlighted tokens at fake_text_pos [0, 1, 2, 3, 4, 5, 10, 11, 12, 13, 14, 15] misdescribe the scene: it shows two male figures on a debate-style stage, not Judy Smith, a PR adviser context, or Sony Pictures.",
+      "parsed": {
+        "verdict": "FAKE",
+        "category": "text_swap",
+        "fake_image_box_pred": [],
+        "fake_text_pos_pred": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15
+        ],
+        "evidence": "The image itself appears coherent, with consistent stage lighting, grain, and sharp suit textures, but the caption’s highlighted tokens at fake_text_pos [0, 1, 2, 3, 4, 5, 10, 11, 12, 13, 14, 15] misdescribe the scene: it shows two male figures on a debate-style stage, not Judy Smith, a PR adviser context, or Sony Pictures."
+      }
+    },
+    {
+      "id": 1673909,
+      "gt_verdict": "FAKE",
+      "gt_category": "text_attribute",
+      "bin_score": 0.9046505093574524,
+      "raw_output": "Verdict: FAKE\nCategory: text_attribute\nFake Image Box: []\nFake Text Pos: [7]\nEvidence: The image itself appears real, with consistent grain, compression, and texture sharpness across the suited figures and wood-paneled room. The caption is the issue: it claims “insists the bill is racist people,” but the visual scene only shows officials applauding, with no visible document, speech context, or evidence supporting that specific accusation. The manipulated text is at fake_text_pos [7], the token “",
+      "parsed": {
+        "verdict": "FAKE",
+        "category": "text_attribute",
+        "fake_image_box_pred": [],
+        "fake_text_pos_pred": [
+          7
+        ],
+        "evidence": "The image itself appears real, with consistent grain, compression, and texture sharpness across the suited figures and wood-paneled room. The caption is the issue: it claims “insists the bill is racist people,” but the visual scene only shows officials applauding, with no visible document, speech context, or evidence supporting that specific accusation. The manipulated text is at fake_text_pos [7], the token “is.”"
+      }
+    },
+    {
+      "id": 986485,
+      "gt_verdict": "FAKE",
+      "gt_category": "face_attribute&text_attribute",
+      "bin_score": 0.9149009585380554,
+      "raw_output": "Verdict: FAKE\nCategory: face_attribute\nFake Image Box: [48, 26, 138, 154]\nFake Text Pos: []\nEvidence: The face within [xmin=48, ymin=26, xmax=138, ymax=154] shows a noticeably different texture from the surrounding crowd: the skin and smile area look smoother and more smeared, with weaker grain and softer edge transitions than the nearby scarf and background. The facial tones also blend unevenly into the head covering, suggesting an altered face attribute rather than natural camera blur.",
+      "parsed": {
+        "verdict": "FAKE",
+        "category": "face_attribute",
+        "fake_image_box_pred": [
+          48.0,
+          26.0,
+          138.0,
+          154.0
+        ],
+        "fake_text_pos_pred": [],
+        "evidence": "The face within [xmin=48, ymin=26, xmax=138, ymax=154] shows a noticeably different texture from the surrounding crowd: the skin and smile area look smoother and more smeared, with weaker grain and softer edge transitions than the nearby scarf and background. The facial tones also blend unevenly into the head covering, suggesting an altered face attribute rather than natural camera blur."
+      }
+    },
+    {
+      "id": 961202,
+      "gt_verdict": "FAKE",
+      "gt_category": "face_attribute&text_swap",
+      "bin_score": 0.8175744414329529,
+      "raw_output": "Verdict: REAL\nCategory: orig\nFake Image Box: []\nFake Text Pos: []\nEvidence: The caption naturally fits the unaltered scene, showing a man walking outdoors while being followed or photographed, consistent with a news-style image about a political figure. The cool, overcast color temperature, soft diffuse illumination, and wet-looking pavement all share the same ambient shadows and grain. Edges and compression are uniform across subjects and background, with no manipulation detected.",
+      "parsed": {
+        "verdict": "REAL",
+        "category": "orig",
+        "fake_image_box_pred": [],
+        "fake_text_pos_pred": [],
+        "evidence": "The caption naturally fits the unaltered scene, showing a man walking outdoors while being followed or photographed, consistent with a news-style image about a political figure. The cool, overcast color temperature, soft diffuse illumination, and wet-looking pavement all share the same ambient shadows and grain. Edges and compression are uniform across subjects and background, with no manipulation detected."
+      }
+    },
+    {
+      "id": 694772,
+      "gt_verdict": "FAKE",
+      "gt_category": "text_attribute",
+      "bin_score": 0.7549149990081787,
+      "raw_output": "Verdict: FAKE\nCategory: text_attribute\nFake Image Box: []\nFake Text Pos: [1, 6]\nEvidence: The image shows uniformed armed personnel moving through an urban street, not civilians celebrating. The caption’s highlighted text at fake_text_pos [1, 6] injects a national identity and a celebratory “victory” framing that the scene does not support; the visible mood appears tense and militarized rather than festive.",
+      "parsed": {
+        "verdict": "FAKE",
+        "category": "text_attribute",
+        "fake_image_box_pred": [],
+        "fake_text_pos_pred": [
+          1,
+          6
+        ],
+        "evidence": "The image shows uniformed armed personnel moving through an urban street, not civilians celebrating. The caption’s highlighted text at fake_text_pos [1, 6] injects a national identity and a celebratory “victory” framing that the scene does not support; the visible mood appears tense and militarized rather than festive."
+      }
+    },
+    {
+      "id": 1607681,
+      "gt_verdict": "FAKE",
+      "gt_category": "text_attribute",
+      "bin_score": 0.9149009585380554,
+      "raw_output": "Verdict: FAKE\nCategory: text_attribute\nFake Image Box: []\nFake Text Pos: [5]\nEvidence: The image itself appears real, with consistent broadcast-style softness, grain, and texture across the parliamentary chamber. The caption’s highlighted token at fake_text_pos [5], “has,” helps form the claim “has failed to work out,” which is not visually supported; the scene only shows a suited man speaking or reading, with no evidence of failure or business-related action.",
+      "parsed": {
+        "verdict": "FAKE",
+        "category": "text_attribute",
+        "fake_image_box_pred": [],
+        "fake_text_pos_pred": [
+          5
+        ],
+        "evidence": "The image itself appears real, with consistent broadcast-style softness, grain, and texture across the parliamentary chamber. The caption’s highlighted token at fake_text_pos [5], “has,” helps form the claim “has failed to work out,” which is not visually supported; the scene only shows a suited man speaking or reading, with no evidence of failure or business-related action."
+      }
+    },
+    {
+      "id": 1598863,
+      "gt_verdict": "FAKE",
+      "gt_category": "face_swap",
+      "bin_score": 0.9149009585380554,
+      "raw_output": "Verdict: FAKE\nCategory: face_swap\nFake Image Box: [360, 78, 464, 220]\nFake Text Pos: []\nEvidence: The right man’s face shows a pasted quality: skin texture is smoother and differently lit than the surrounding hair, ear, and neck, with a soft edge transition along the cheek and jaw. The facial lighting also feels flatter than the suit and background, weakening natural integration. The manipulated region is at [xmin=360, ymin=78, xmax=464, ymax=220].",
+      "parsed": {
+        "verdict": "FAKE",
+        "category": "face_swap",
+        "fake_image_box_pred": [
+          360.0,
+          78.0,
+          464.0,
+          220.0
+        ],
+        "fake_text_pos_pred": [],
+        "evidence": "The right man’s face shows a pasted quality: skin texture is smoother and differently lit than the surrounding hair, ear, and neck, with a soft edge transition along the cheek and jaw. The facial lighting also feels flatter than the suit and background, weakening natural integration. The manipulated region is at [xmin=360, ymin=78, xmax=464, ymax=220]."
+      }
+    },
+    {
+      "id": 913758,
+      "gt_verdict": "FAKE",
+      "gt_category": "face_attribute",
+      "bin_score": 0.8670357465744019,
+      "raw_output": "Verdict: FAKE\nCategory: face_attribute\nFake Image Box: [170, 39, 234, 125]\nFake Text Pos: []\nEvidence: The face area inside [xmin=170, ymin=39, xmax=234, ymax=125] shows a noticeably different texture from the surrounding scene: the skin and facial features look smoother and more sharply defined than the grainy, low-light background. Edge transitions around the hairline and cheeks appear slightly pasted-in, with uneven noise blending compared to the shirt, hair, and nearby faces.",
+      "parsed": {
+        "verdict": "FAKE",
+        "category": "face_attribute",
+        "fake_image_box_pred": [
+          170.0,
+          39.0,
+          234.0,
+          125.0
+        ],
+        "fake_text_pos_pred": [],
+        "evidence": "The face area inside [xmin=170, ymin=39, xmax=234, ymax=125] shows a noticeably different texture from the surrounding scene: the skin and facial features look smoother and more sharply defined than the grainy, low-light background. Edge transitions around the hairline and cheeks appear slightly pasted-in, with uneven noise blending compared to the shirt, hair, and nearby faces."
+      }
+    },
+    {
+      "id": 469868,
+      "gt_verdict": "FAKE",
+      "gt_category": "face_attribute",
+      "bin_score": 0.9740425944328308,
+      "raw_output": "Verdict: FAKE\nCategory: face_attribute\nFake Image Box: [128, 26, 160, 65]\nFake Text Pos: []\nEvidence: The face area inside [xmin=128, ymin=26, xmax=160, ymax=65] shows a noticeably different texture from the surrounding head and suit, with smoother, flatter skin detail and sharper facial edges than the rest of the compressed scene. The transition around the forehead and cheeks looks slightly pasted-in, with uneven grain and tonal blending compared with the nearby background and clothing.",
+      "parsed": {
+        "verdict": "FAKE",
+        "category": "face_attribute",
+        "fake_image_box_pred": [
+          128.0,
+          26.0,
+          160.0,
+          65.0
+        ],
+        "fake_text_pos_pred": [],
+        "evidence": "The face area inside [xmin=128, ymin=26, xmax=160, ymax=65] shows a noticeably different texture from the surrounding head and suit, with smoother, flatter skin detail and sharper facial edges than the rest of the compressed scene. The transition around the forehead and cheeks looks slightly pasted-in, with uneven grain and tonal blending compared with the nearby background and clothing."
+      }
+    },
+    {
+      "id": 126734,
+      "gt_verdict": "REAL",
+      "gt_category": "orig",
+      "bin_score": 0.6791787147521973,
+      "raw_output": "Verdict: REAL\nCategory: orig\nFake Image Box: []\nFake Text Pos: []\nEvidence: The caption naturally fits the unaltered image, which shows a woman in a formal hearing-like setting with seated officials behind her, consistent with a public official facing scrutiny. No manipulation is detected; edges around the subject, hands, and background figures show normal compression softness and grain, with no suspicious haloing, abrupt boundary blending, or lighting mismatch.",
+      "parsed": {
+        "verdict": "REAL",
+        "category": "orig",
+        "fake_image_box_pred": [],
+        "fake_text_pos_pred": [],
+        "evidence": "The caption naturally fits the unaltered image, which shows a woman in a formal hearing-like setting with seated officials behind her, consistent with a public official facing scrutiny. No manipulation is detected; edges around the subject, hands, and background figures show normal compression softness and grain, with no suspicious haloing, abrupt boundary blending, or lighting mismatch."
+      }
+    },
+    {
+      "id": 567258,
+      "gt_verdict": "REAL",
+      "gt_category": "orig",
+      "bin_score": 0.4687906503677368,
+      "raw_output": "Verdict: REAL\nCategory: orig\nFake Image Box: []\nFake Text Pos: []\nEvidence: The caption naturally matches the unaltered scene: a boxer on the left is holding a prominent championship belt while a suited man stands beside him in a ring setting. No manipulation is detected; the belt edges, skin texture, lighting, shadows, and compression grain appear consistent, with no suspicious haloing, edge pixelation, or unnatural boundary blending.",
+      "parsed": {
+        "verdict": "REAL",
+        "category": "orig",
+        "fake_image_box_pred": [],
+        "fake_text_pos_pred": [],
+        "evidence": "The caption naturally matches the unaltered scene: a boxer on the left is holding a prominent championship belt while a suited man stands beside him in a ring setting. No manipulation is detected; the belt edges, skin texture, lighting, shadows, and compression grain appear consistent, with no suspicious haloing, edge pixelation, or unnatural boundary blending."
+      }
+    },
+    {
+      "id": 1451002,
+      "gt_verdict": "REAL",
+      "gt_category": "orig",
+      "bin_score": 0.9324532747268677,
+      "raw_output": "Verdict: REAL\nCategory: orig\nFake Image Box: []\nFake Text Pos: []\nEvidence: The image shows three unaltered mugshot-style portraits with consistent grain, muted lighting, and uniform compression across the panels. The caption reads like a news description and naturally aligns with the visual context of presented suspect images. Edges, shadows, and background texture appear coherent, with no signs of splicing, retouching, or text-image manipulation detected.",
+      "parsed": {
+        "verdict": "REAL",
+        "category": "orig",
+        "fake_image_box_pred": [],
+        "fake_text_pos_pred": [],
+        "evidence": "The image shows three unaltered mugshot-style portraits with consistent grain, muted lighting, and uniform compression across the panels. The caption reads like a news description and naturally aligns with the visual context of presented suspect images. Edges, shadows, and background texture appear coherent, with no signs of splicing, retouching, or text-image manipulation detected."
+      }
+    },
+    {
+      "id": 493785,
+      "gt_verdict": "FAKE",
+      "gt_category": "face_swap",
+      "bin_score": 0.9324532747268677,
+      "raw_output": "Verdict: FAKE\nCategory: face_swap\nFake Image Box: [87, 84, 113, 119]\nFake Text Pos: []\nEvidence: The face within [xmin=87, ymin=84, xmax=113, ymax=119] shows a pasted quality: its edges look slightly soft against the hair and neck, with a faint halo and smoother texture than the surrounding skin and stage lighting. The facial tones also transition unevenly into the jaw and ear area, suggesting a face-swap rather than a naturally captured face.",
+      "parsed": {
+        "verdict": "FAKE",
+        "category": "face_swap",
+        "fake_image_box_pred": [
+          87.0,
+          84.0,
+          113.0,
+          119.0
+        ],
+        "fake_text_pos_pred": [],
+        "evidence": "The face within [xmin=87, ymin=84, xmax=113, ymax=119] shows a pasted quality: its edges look slightly soft against the hair and neck, with a faint halo and smoother texture than the surrounding skin and stage lighting. The facial tones also transition unevenly into the jaw and ear area, suggesting a face-swap rather than a naturally captured face."
+      }
+    },
+    {
+      "id": 824485,
+      "gt_verdict": "REAL",
+      "gt_category": "orig",
+      "bin_score": 0.29421496391296387,
+      "raw_output": "Verdict: REAL\nCategory: orig\nFake Image Box: []\nFake Text Pos: []\nEvidence: The caption naturally matches the scene: a crowd at a rally holds protest signs, including one reading “NYPD STOP SPYING ON ME,” consistent with opposition to NYPD surveillance practices. The image shows uniform grain, coherent lighting, and natural depth-of-field blur across foreground and background, with no suspicious edge breaks, texture mismatches, or compositing signs. No manipulation is detected.",
+      "parsed": {
+        "verdict": "REAL",
+        "category": "orig",
+        "fake_image_box_pred": [],
+        "fake_text_pos_pred": [],
+        "evidence": "The caption naturally matches the scene: a crowd at a rally holds protest signs, including one reading “NYPD STOP SPYING ON ME,” consistent with opposition to NYPD surveillance practices. The image shows uniform grain, coherent lighting, and natural depth-of-field blur across foreground and background, with no suspicious edge breaks, texture mismatches, or compositing signs. No manipulation is detected."
+      }
+    },
+    {
+      "id": 805607,
+      "gt_verdict": "REAL",
+      "gt_category": "orig",
+      "bin_score": 0.562176525592804,
+      "raw_output": "Verdict: REAL\nCategory: orig\nFake Image Box: []\nFake Text Pos: []\nEvidence: The caption naturally matches the unaltered image, showing a group of men walking together in an urban street setting consistent with an Entourage-style ensemble shot. The soft focus, compression grain, and mild edge pixelation are uniform across faces, clothing, and background, with no suspicious halos, cutout borders, or mismatched lighting. No manipulation is detected.",
+      "parsed": {
+        "verdict": "REAL",
+        "category": "orig",
+        "fake_image_box_pred": [],
+        "fake_text_pos_pred": [],
+        "evidence": "The caption naturally matches the unaltered image, showing a group of men walking together in an urban street setting consistent with an Entourage-style ensemble shot. The soft focus, compression grain, and mild edge pixelation are uniform across faces, clothing, and background, with no suspicious halos, cutout borders, or mismatched lighting. No manipulation is detected."
+      }
+    },
+    {
+      "id": 1138089,
+      "gt_verdict": "REAL",
+      "gt_category": "orig",
+      "bin_score": 0.4687906503677368,
+      "raw_output": "Verdict: REAL\nCategory: orig\nFake Image Box: []\nFake Text Pos: []\nEvidence: The caption naturally matches the image: two school-age pupils in dark uniforms and aprons are focused on a small propeller-like vehicle on a workbench, consistent with a hands-on project involving printed parts. The image shows uniform grain, soft compression, and consistent texture sharpness across faces, clothing, bench, and object edges, with no suspicious blending, lighting mismatch, or manipulation detected.",
+      "parsed": {
+        "verdict": "REAL",
+        "category": "orig",
+        "fake_image_box_pred": [],
+        "fake_text_pos_pred": [],
+        "evidence": "The caption naturally matches the image: two school-age pupils in dark uniforms and aprons are focused on a small propeller-like vehicle on a workbench, consistent with a hands-on project involving printed parts. The image shows uniform grain, soft compression, and consistent texture sharpness across faces, clothing, bench, and object edges, with no suspicious blending, lighting mismatch, or manipulation detected."
+      }
+    },
+    {
+      "id": 819782,
+      "gt_verdict": "FAKE",
+      "gt_category": "face_swap",
+      "bin_score": 0.622459352016449,
+      "raw_output": "Verdict: REAL\nCategory: orig\nFake Image Box: []\nFake Text Pos: []\nEvidence: The caption naturally matches the unaltered image: three family members are posed together in a casual vacation-like setting, with an adult man behind two younger people. The soft focus, grain, and compression are consistent across faces, clothing, background, and edges, with no suspicious halos, cutout borders, or mismatched lighting. No manipulation is detected.",
+      "parsed": {
+        "verdict": "REAL",
+        "category": "orig",
+        "fake_image_box_pred": [],
+        "fake_text_pos_pred": [],
+        "evidence": "The caption naturally matches the unaltered image: three family members are posed together in a casual vacation-like setting, with an adult man behind two younger people. The soft focus, grain, and compression are consistent across faces, clothing, background, and edges, with no suspicious halos, cutout borders, or mismatched lighting. No manipulation is detected."
+      }
+    },
+    {
+      "id": 1626667,
+      "gt_verdict": "FAKE",
+      "gt_category": "face_swap",
+      "bin_score": 0.8807970285415649,
+      "raw_output": "Verdict: FAKE\nCategory: face_swap\nFake Image Box: [294, 26, 354, 104]\nFake Text Pos: []\nEvidence: The face within [xmin=294, ymin=26, xmax=354, ymax=104] appears visually mismatched to the surrounding family photo: its skin tone is warmer and smoother than the cooler, grainy image, and the facial illumination does not fully follow the soft ambient light on the shirt and background. The edge transition around the head looks slightly pasted, with weak shadow integration compared with the rest of t",
+      "parsed": {
+        "verdict": "FAKE",
+        "category": "face_swap",
+        "fake_image_box_pred": [
+          294.0,
+          26.0,
+          354.0,
+          104.0
+        ],
+        "fake_text_pos_pred": [],
+        "evidence": "The face within [xmin=294, ymin=26, xmax=354, ymax=104] appears visually mismatched to the surrounding family photo: its skin tone is warmer and smoother than the cooler, grainy image, and the facial illumination does not fully follow the soft ambient light on the shirt and background. The edge transition around the head looks slightly pasted, with weak shadow integration compared with the rest of the scene."
+      }
+    },
+    {
+      "id": 113562,
+      "gt_verdict": "REAL",
+      "gt_category": "orig",
+      "bin_score": 0.16451644897460938,
+      "raw_output": "Verdict: REAL\nCategory: orig\nFake Image Box: []\nFake Text Pos: []\nEvidence: The caption naturally matches the unaltered scene: two men in a startup-like office are seated at laptops, with a “WORKKAPITAL” sign and tech equipment visible. The cool indoor color temperature, overhead illumination, and soft ambient shadows are consistent across faces, desks, and devices. Edges, texture, and compression appear uniform, with no manipulation detected.",
+      "parsed": {
+        "verdict": "REAL",
+        "category": "orig",
+        "fake_image_box_pred": [],
+        "fake_text_pos_pred": [],
+        "evidence": "The caption naturally matches the unaltered scene: two men in a startup-like office are seated at laptops, with a “WORKKAPITAL” sign and tech equipment visible. The cool indoor color temperature, overhead illumination, and soft ambient shadows are consistent across faces, desks, and devices. Edges, texture, and compression appear uniform, with no manipulation detected."
+      }
+    }
+  ]
+}
