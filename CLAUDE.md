@@ -11,9 +11,9 @@
 checkpoint 恢复，继续完成剩余 epoch / step，不允许从头重训。**
 
 适用范围：
-- `training_models/configs/*.yaml`
-- `training_models/run_train.sh` 及任何启动脚本
-- AutoDL 实例上 `/root/autodl-tmp/DGM4_Project/training_models/` 下对应文件
+- `DGM4_Project_remote/training_models/configs/*.yaml`
+- `DGM4_Project_remote/training_models/run_train.sh` 及任何启动脚本
+- 远端 AutoDL 实例上 `/root/autodl-tmp/DGM4_Project/training_models/` 下对应文件
 - 任何新增的训练 / 微调 / RLHF / 评测脚本
 
 修改训练参数时必须同时满足以下条件：
@@ -47,6 +47,33 @@ checkpoint 恢复，继续完成剩余 epoch / step，不允许从头重训。**
 声明 "BOUNDARY-OVERRIDE: training-resume" 并附带用户书面同意。
 
 ---
+
+## 代码提交位置（Commit Location — MUST HOLD）
+
+**所有训练 / 评测相关代码、配置、脚本的提交（`git add` / `git commit` /
+`git push`）默认在云端 AutoDL 主机上完成，不在本地 Windows 仓库进行。**
+
+适用范围：
+- `training_models/configs/*.yaml`
+- `training_models/*.py`、`training_models/*.sh`
+- `training_models/src/` 下任何 LLaMA-Factory 相关改动
+- 远端实例 `/root/autodl-tmp/DGM4_Project/` 内的所有改动
+
+操作流程：
+1. 改动先在云端文件直接编辑（或本地编辑后 `scp` / `rsync` 上传到云端）
+2. 在云端执行 `git add` / `git commit` / `git push`
+3. **本地仓库通过 `git pull` 拉取，不在本地直接 commit 训练相关文件**
+
+例外（允许在本地 commit 的范围）：
+- `manuscript/`、`docs/`、`notes/`、`references/` 等论文撰写资料
+- `Paper-DGM4` 本地仓库特有的元数据（如 `CLAUDE.md`、`AGENTS.md`、
+  `.codex/`、`scripts/` 下的本地工具脚本）
+- 不会上传到云端运行的纯本地分析代码
+
+理由：
+- 云端是真实运行环境，文件路径、依赖、checkpoint 都以云端为权威源
+- 避免本地修改后忘记上传，云端跑的是旧版代码
+- 避免本地 / 云端双向 commit 导致 merge 冲突
 
 ## 当前生效的训练配置参考
 
