@@ -1,0 +1,17 @@
+﻿# LLaMA-Factory (cloned separately)
+training_models/src/LLaMA-Factory/
+# Output and logs
+training_models/outputs/
+training_models/logs/
+# Python cache
+__pycache__/
+*.pyc
+# IDE
+.idea/
+# OS
+.DS_Store
+Thumbs.db
+dataset_build/train_label_v3_grounded.jsonl
+training_models/datasets/dgm4_instruct_backup/
+training_models/base_models/
+modelscope_upload/
