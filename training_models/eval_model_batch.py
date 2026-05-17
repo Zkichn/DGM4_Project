@@ -3,7 +3,9 @@
 
 Difference vs eval_model.py:
 - Processes multiple samples per forward pass (configurable --batch-size)
-- Significant GPU utilization improvement (40% → 70%+ at batch=8)
+- Default --batch-size=24 (canonical; user-verified on RTX 4080 SUPER 32GB)
+- On OOM at primary batch, retries failed batch in chunks of --oom-fallback-batch (default 16)
+- Significant GPU utilization improvement (40% → 70%+ at batch=8, higher at batch=24)
 - Estimated 3-5x speedup vs single-sample inference
 
 All 12 Table 2 metrics retained (Binary / Multi-Label / Image / Text Grounding).
@@ -234,8 +236,12 @@ def main():
     p.add_argument("--output", default="eval_results_batch.json")
     p.add_argument("--limit", type=int, default=0)
     p.add_argument("--max-tokens", type=int, default=200)
-    p.add_argument("--batch-size", type=int, default=4,
-                    help="True batch size for parallel inference")
+    p.add_argument("--batch-size", type=int, default=24,
+                    help="True batch size for parallel inference. "
+                         "Default 24, OOM falls back to --oom-fallback-batch.")
+    p.add_argument("--oom-fallback-batch", type=int, default=16,
+                    help="Chunk size to retry within a batch after a primary-batch "
+                         "OOM, before final single-sample fallback.")
     args = p.parse_args()
 
     from transformers import Qwen3VLForConditionalGeneration, AutoProcessor
@@ -288,16 +294,30 @@ def main():
             batch_out = run_batch_true(
                 model, processor, batch, args.media_dir, args.max_tokens)
         except Exception as e:
-            # On OOM or failure, fall back to per-sample for this batch
-            print(f"  [WARN] batch failed: {e}, falling back to single mode")
+            # Primary batch failed (OOM or other). Retry in chunks of
+            # --oom-fallback-batch, then single-sample as final fallback.
+            torch.cuda.empty_cache()
+            print(f"  [WARN] batch={len(batch)} failed: {e}, "
+                  f"retrying chunks of {args.oom_fallback_batch}")
             batch_out = []
-            for s in batch:
+            for ck in range(0, len(batch), args.oom_fallback_batch):
+                chunk = batch[ck:ck + args.oom_fallback_batch]
                 try:
-                    r = run_batch_true(
-                        model, processor, [s], args.media_dir, args.max_tokens)
-                    batch_out.append(r[0])
+                    batch_out.extend(run_batch_true(
+                        model, processor, chunk,
+                        args.media_dir, args.max_tokens))
                 except Exception as e2:
-                    batch_out.append(("", None))
+                    torch.cuda.empty_cache()
+                    print(f"  [WARN] fallback chunk={len(chunk)} also failed: "
+                          f"{e2}, retrying single-sample mode")
+                    for s in chunk:
+                        try:
+                            r = run_batch_true(
+                                model, processor, [s],
+                                args.media_dir, args.max_tokens)
+                            batch_out.append(r[0])
+                        except Exception:
+                            batch_out.append(("", None))
 
         # ── process each result ──
         for i, sample in enumerate(batch):

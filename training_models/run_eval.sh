@@ -3,7 +3,7 @@
 # Usage: bash run_eval.sh [adapter_path] [batch_size] [limit]
 
 ADAPTER="${1:-outputs/qwen3-vl-8b/dgm4-instruct/lora-sft}"
-BATCH_SIZE="${2:-8}"
+BATCH_SIZE="${2:-24}"
 LIMIT="${3:-0}"
 
 cleanup() {
