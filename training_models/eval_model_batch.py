@@ -233,7 +233,10 @@ def main():
                    default="/root/autodl-tmp/DGM4_Project/training_models/"
                            "datasets/dgm4_instruct/test.json")
     p.add_argument("--media-dir", default="/root/autodl-tmp/datasets")
-    p.add_argument("--output", default="eval_results_batch.json")
+    p.add_argument("--output", default=None,
+                   help="Output filename (in same dir as adapter parent). "
+                        "Default: eval_results__<adapter_basename>.json so "
+                        "multiple adapter evaluations do not overwrite each other.")
     p.add_argument("--limit", type=int, default=0)
     p.add_argument("--max-tokens", type=int, default=200)
     p.add_argument("--batch-size", type=int, default=24,
@@ -243,6 +246,12 @@ def main():
                     help="Chunk size to retry within a batch after a primary-batch "
                          "OOM, before final single-sample fallback.")
     args = p.parse_args()
+
+    # Auto-name output by adapter basename to prevent cross-experiment overwrites.
+    if args.output is None:
+        adapter_base = os.path.basename(args.adapter.rstrip("/"))
+        args.output = f"eval_results__{adapter_base}.json"
+        print(f"Auto-named output: {args.output}")
 
     from transformers import Qwen3VLForConditionalGeneration, AutoProcessor
     from peft import PeftModel

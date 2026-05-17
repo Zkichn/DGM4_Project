@@ -96,3 +96,50 @@ checkpoint 恢复，继续完成剩余 epoch / step。**
 | `CLAUDE.md`（本文件） | 边界 + canonical 文件清单（静态） |
 
 修改本文件时只动**规则**；状态信息一律写 `docs/DEVELOPMENT_LOG.md`。
+
+---
+
+## 5. State Sync & Push Triggers（3-tier 仓库架构）
+
+```
+   Cloud (active work)  ─push (after approval)─▶  GitHub remote
+   /root/autodl-tmp/DGM4_Project/                  Zkichn/DGM4_Project
+         │                                         @ autodl-training
+         │ state sync (no approval)
+         ▼
+   Local (handoff for new conversations)
+   C:\Users\Administrator\Desktop\Paper-DGM4\
+```
+
+### 5.1 触发本地同步（无需审批）
+
+以下任一发生即更新本地 `docs/DEVELOPMENT_LOG.md`：
+
+- 训练运行结束（任意结果）
+- 评测运行结束
+- 用户做出关键决策（config / lr / dataset / route 分叉）
+
+同步内容必须包含：对应云端 commit hash + 简要总结 + 关键指标 / 参数。
+
+### 5.2 触发 GitHub push（**必须用户书面审批**）
+
+§5.1 任一事件发生 **AND** 用户明确说 "push" / "推" / "确认上传"。
+
+### 5.3 Pre-push checklist（每次 push 前 MUST DO）
+
+1. `git status --short` 列出工作区
+2. `git diff --cached --stat` 列出已暂存
+3. 把这份清单给用户看
+4. 等用户明确 OK
+5. 才执行 `git push`
+
+**禁止** `git add .` / `git add -A`。一律 `git add <具体路径>`。
+
+### 5.4 模型权重 push 政策
+
+- 训练完成 + 用户审批后 → `adapter_model.safetensors` 可 push（~167 MB / 个）
+- `adapter_config.json` / `training_args.bin` / `*_results.json` / `trainer_state.json` /
+  `*_loss.png` 同上，皆为小元数据可入库
+- 以下永久 `.gitignore` 屏蔽，永不入库：`optimizer.pt` / `scheduler.pt` /
+  `rng_state.pth` / `scaler.pt` / `global_step*` / `checkpoint-*/` 子目录 /
+  与 base 模型重复的 tokenizer 文件

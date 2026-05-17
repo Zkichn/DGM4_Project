@@ -1,21 +1,51 @@
 # LLaMA-Factory (cloned separately)
 training_models/src/LLaMA-Factory/
-# Output and logs
-# training_models/outputs/
+
+# Logs
 training_models/logs/
+
 # Python cache
 __pycache__/
 *.pyc
-# IDE
+
+# IDE / OS
 .idea/
-# OS
 .DS_Store
 Thumbs.db
+
+# Old internal artifacts
 dataset_build/train_label_v3_grounded.jsonl
 training_models/datasets/dgm4_instruct_backup/
 
-# Training intermediate checkpoints (large, only needed for resume on same host)
+# ════════════════════════════════════════════════════════════════
+# Training output policy (see CLAUDE.md §5)
+# ════════════════════════════════════════════════════════════════
+# adapter_model.safetensors / adapter_config.json / training_args.bin /
+# train_results.json / all_results.json / trainer_state.json /
+# training_loss.png / eval_loss.png  → NOT ignored; may be added explicitly
+# after user-approved training milestone.
+#
+# Everything else inside outputs/ is large or duplicate and is blocked.
+
+# Intermediate checkpoints (resume-only; large)
 training_models/outputs/**/checkpoint-*/
 
-# Eval log files
-training_models/logs/
+# Optimizer / scheduler / RNG state (resume-only; large)
+training_models/outputs/**/optimizer.pt
+training_models/outputs/**/scheduler.pt
+training_models/outputs/**/rng_state.pth
+training_models/outputs/**/scaler.pt
+training_models/outputs/**/global_step*
+
+# Tokenizer / processor duplicates auto-copied by LLaMA-Factory
+# (bit-identical to the base Qwen3-VL tokenizer; ~15 MB per adapter)
+training_models/outputs/**/tokenizer.json
+training_models/outputs/**/tokenizer_config.json
+training_models/outputs/**/special_tokens_map.json
+training_models/outputs/**/added_tokens.json
+training_models/outputs/**/vocab.json
+training_models/outputs/**/merges.txt
+training_models/outputs/**/chat_template.jinja
+training_models/outputs/**/processor_config.json
+training_models/outputs/**/preprocessor_config.json
+training_models/outputs/**/README.md
