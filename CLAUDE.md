@@ -75,7 +75,41 @@ checkpoint 恢复，继续完成剩余 epoch / step，不允许从头重训。**
 - 避免本地修改后忘记上传，云端跑的是旧版代码
 - 避免本地 / 云端双向 commit 导致 merge 冲突
 
-## 当前生效的训练配置参考
+## 当前生效的训练 / 评测配置（Canonical Configs — 新对话必须使用以下文件）
+
+新对话开始处理训练或评测时，**必须**使用以下文件作为权威配置源，不要自己另起文件：
+
+### 训练（cloud: `/root/autodl-tmp/DGM4_Project/training_models/`）
+
+| 文件 | 用途 | 关键参数 |
+|---|---|---|
+| `configs/qwen3vl_8b_lora_sft_dgm4_instruct_autodl.yaml` | **当前主训练配置**（new fast config） | batch=2, accum=4, workers=4, effective_batch=8 |
+| `configs/qwen3vl_8b_lora_sft_dgm4_instruct.yaml` | 旧基线配置（保留作对照） | batch=1, accum=8, workers=0 |
+| `configs/qwen3vl_8b_lora_speedtest.yaml` | 30-step 速度测试模板 | max_steps=30 |
+| `run_train.sh` | 训练启动器，含 trap EXIT 通知 + autodl halt 自动关机 | — |
+
+### 评测（cloud: `/root/autodl-tmp/DGM4_Project/training_models/`）
+
+| 文件 | 用途 |
+|---|---|
+| `eval_model_batch.py` | **当前主评测脚本**（batched，全 12 Table 2 指标） |
+| `eval_model.py` | 旧单样本评测（保留作对照） |
+| `run_eval.sh` | 评测启动器，含同样的 trap EXIT 通知 + autodl halt |
+
+### 已训模型 adapter（按 commit-on-cloud 规则，不动）
+
+| 路径 | 内容 |
+|---|---|
+| `outputs/qwen3-vl-8b/dgm4-instruct/lora-sft/` | 旧 config, 3 epoch, eval_loss 0.5329（基线） |
+| `outputs/qwen3-vl-8b/dgm4-instruct/lora-sft-fast/` | 新 config, 3 epoch, eval_loss 0.5296（**当前最佳**） |
+
+### 续训 / 二次微调入口字段
+
+`adapter_name_or_path`：指向已训 adapter → 二次微调起点  
+`resume_from_checkpoint`：指向 `checkpoint-*/` → 断点续训起点  
+两者互斥，不可同时设置。
+
+## 当前生效的训练配置参考字段
 
 `qwen3vl_8b_lora_sft_dgm4_instruct_autodl.yaml` 中与续训直接相关的字段：
 
