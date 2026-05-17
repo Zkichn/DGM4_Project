@@ -54,34 +54,74 @@ checkpoint 恢复，继续完成剩余 epoch / step。**
 
 ---
 
-## 3. Canonical 文件清单（路径稳定 = 规则）
+## 3. Canonical 目录与脚本契约（path conventions & launcher contract）
 
-新对话处理训练 / 评测时，**必须**使用以下文件，不要另起。
+新对话处理训练 / 评测时，**必须**遵守以下目录布局与脚本接口契约。
+具体模型名 / config 文件名 / 哪份 adapter 是"当前最佳" / 当前 run_name —
+**全部**属于状态信息 → 见 `docs/DEVELOPMENT_LOG.md` 最新一节。
 
-### 训练（cloud: `/root/autodl-tmp/DGM4_Project/training_models/`）
+新增其它模型（LLaVA / InternVL / BLIP / 其他 VLM）时只需遵循下述
+模式落 yaml + 复用三个启动脚本，**不需要**修改本文件。
 
-| 文件 | 用途 |
-|---|---|
-| `configs/qwen3vl_8b_lora_sft_dgm4_instruct_autodl.yaml` | 主训练 config（当前优化版） |
-| `configs/qwen3vl_8b_lora_sft_dgm4_instruct.yaml` | 旧基线 config（对照保留） |
-| `configs/qwen3vl_8b_lora_speedtest.yaml` | 30-step 速度测试模板 |
-| `run_train.sh` | 训练启动器（trap EXIT 通知 + autodl halt） |
+### 3.1 目录布局（cloud: `/root/autodl-tmp/DGM4_Project/training_models/`）
 
-### 评测
+```
+training_models/
+├── configs/                                            # 所有 yaml 集中放
+│   └── <model><size>_<method>_<task>_<env>.yaml
+├── outputs/<model_family>/<task>/<run_name>/           # 训练产出
+│   └── eval_results__<run_name>.json                   # 评测结果（按 adapter 名自动）
+├── logs/<model_family>-<task>-<run_name>/              # 训练日志（被 .gitignore）
+├── eval_model_batch.py                                 # 主评测脚本（batched）
+├── eval_model.py                                       # 旧单样本评测（对照保留）
+├── run_train.sh                                        # 训练启动器
+├── run_eval.sh                                         # 评测启动器
+└── run_train_then_eval.sh                              # 一体化 train→eval→halt
+```
 
-| 文件 | 用途 |
-|---|---|
-| `eval_model_batch.py` | 主评测脚本（batched，全 12 Table 2 指标） |
-| `eval_model.py` | 旧单样本评测（对照保留） |
-| `run_eval.sh` | 评测启动器 |
+举例：
+- Qwen3-VL：`outputs/qwen3-vl-8b/dgm4-instruct/lora-sft-fast/`
+- 假设加 LLaVA-v1.6：`outputs/llava-v1.6/dgm4-instruct/lora-sft-fast/`
+  （无需改本文件，按模式即可）
 
-### 续训 / 二次微调入口字段
+### 3.2 启动脚本接口契约（interface, not implementation）
 
-- `adapter_name_or_path: <path>` → 二次微调起点
-- `resume_from_checkpoint: <checkpoint-N>` → 断点续训起点
+- `run_train.sh [config_name.yaml]`
+  - 加载 `configs/<config_name.yaml>` 调 llamafactory-cli train
+  - 自带 `trap cleanup EXIT`：进程退出后 ≥ 30s buffer → `autodl halt`
+  - 默认 config 名只是占位；**任意**模型 yaml 都应能被传入
+
+- `run_eval.sh [adapter_path] [batch_size] [limit]`
+  - 调 `eval_model_batch.py --adapter <path> --batch-size <N> --limit <L>`
+  - 自带相同 trap EXIT shutdown 链
+  - canonical 默认 `batch_size=24, oom_fallback_batch=16`
+  - 环境：`PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True`
+
+- `run_train_then_eval.sh [config_name] [adapter_path]`
+  - 单 trap 包住 train + eval，避免内层脚本提前 halt
+  - 训练失败时跳过评测仍 halt
+
+### 3.3 评测脚本契约（`eval_model_batch.py` 必须实现）
+
+- 全 12 项 Table 2 指标（Binary AUC/EER/ACC、Multi-Label mAP/CF1/OF1、
+  Image IoUmean/IoU50/IoU75、Text Tok_P/R/F1）
+- `--output` 默认 `None` → 自动 `eval_results__<adapter_basename>.json`
+  存到 `os.path.dirname(adapter)/`，**避免跨实验互相覆盖**
+- 三段式 OOM 回退：primary batch → `--oom-fallback-batch` chunks → single-sample
+- 输出 per-class 准确率（verdict_acc / category_acc）
+- stdout 打印进度 / 解析率 / GPU peak
+
+### 3.4 续训 / 二次微调入口字段（YAML，与模型无关）
+
+- `adapter_name_or_path: <path>` → 二次微调起点（从已有 adapter 继续）
+- `resume_from_checkpoint: <checkpoint-N>` → 断点续训起点（从某 step 继续）
 - 两者**互斥**，不允许同时设置
 
-具体哪份 adapter 是"当前最佳"属于状态信息 → 见 `docs/DEVELOPMENT_LOG.md`。
+### 3.5 当前活跃配置 → 永远查 DEV log
+
+具体哪份 yaml 是当前主用、哪份 adapter 是当前最佳、哪个 run_name 在跑、
+钱包余额、最近 loss/指标，**全部**从 `docs/DEVELOPMENT_LOG.md` 最新
+一节读取。不要把当前活跃实验钉死在本文件里。
 
 ---
 
