@@ -30,6 +30,7 @@ HF_HOME=/root/autodl-tmp/hf-cache \
 HF_HUB_OFFLINE=1 \
 TRANSFORMERS_OFFLINE=1 \
 PYTHONUNBUFFERED=1 \
+PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \
 /root/miniconda3/bin/python3 eval_model_batch.py \
     --adapter "${ADAPTER}" \
     --batch-size "${BATCH_SIZE}" \
