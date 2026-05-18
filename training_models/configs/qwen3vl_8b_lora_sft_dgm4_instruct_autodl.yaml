@@ -26,8 +26,8 @@ preprocessing_num_workers: 1
 dataloader_num_workers: 0
 
 ### output
-output_dir: ../../outputs/qwen3-vl-8b/dgm4-instruct/lora-sft
-logging_dir: ../../logs/qwen3-vl-8b-dgm4-instruct-lora-sft
+output_dir: ../../outputs/qwen3-vl-8b/dgm4-instruct/lora-sft_epoch0_3
+logging_dir: ../../logs/qwen3-vl-8b-dgm4-instruct-lora-sft_epoch0_3
 logging_steps: 10
 save_steps: 500
 plot_loss: true

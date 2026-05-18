@@ -1,6 +1,6 @@
 ### model
 model_name_or_path: /root/autodl-tmp/hf-cache/models--Qwen--Qwen3-VL-8B-Instruct/snapshots/0c351dd01ed87e9c1b53cbc748cba10e6187ff3b
-adapter_name_or_path: ../../outputs/qwen3-vl-8b/dgm4-instruct/lora-sft
+adapter_name_or_path: ../../outputs/qwen3-vl-8b/dgm4-instruct/lora-sft_epoch0_3
 image_max_pixels: 262144
 video_max_pixels: 16384
 trust_remote_code: true
