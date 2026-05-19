@@ -1,9 +1,15 @@
-# DGM4 Curriculum Datasets
+# DGM4 Stage 3 Final Dataset
 
-These datasets are derived from `../dgm4_instruct` without changing the original annotations.
+This folder mirrors `../dgm4_instruct` for the final curriculum stage.
 
-- Stage 1: binary verdict + four atomic labels (FS/FA/TS/TA)
-- Stage 2: Stage 1 fields + image/text grounding
-- Stage 3: final five-line output with category, grounding, and evidence
+Stage 3 intentionally keeps the original diverse user instructions and the
+final five-line assistant outputs:
 
-Use `train.json` for training and `val.json` for checkpoint selection. `test.json` is provided only for stage-specific sanity checks.
+- `Verdict`
+- `Category`
+- `Fake Image Box`
+- `Fake Text Pos`
+- `Evidence`
+
+Use `train.json` for training and `val.json` for checkpoint selection.
+`test.json` is provided only for stage-specific sanity checks.
