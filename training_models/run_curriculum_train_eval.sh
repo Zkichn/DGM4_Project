@@ -5,7 +5,7 @@
 
 set -euo pipefail
 
-EVAL_BATCH_SIZE="${1:-8}"
+EVAL_BATCH_SIZE="${1:-24}"
 EVAL_LIMIT="${2:-0}"
 
 PROJECT_DIR="/root/autodl-tmp/DGM4_Project"

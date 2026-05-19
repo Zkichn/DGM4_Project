@@ -23,8 +23,8 @@ eval_dataset: dgm4_stage2_grounding_val
 template: qwen3_vl_nothink
 default_system: "You are a multimodal forensic grounding assistant. Determine authenticity, atomic manipulation labels, and manipulated image/text locations. If a modality is not manipulated, output an empty list for that grounding field. Respond strictly in this seven-line format: Verdict: [REAL or FAKE] FS: [yes or no] FA: [yes or no] TS: [yes or no] TA: [yes or no] Fake Image Box: [box or []] Fake Text Pos: [positions or []]"
 cutoff_len: 2048
-preprocessing_num_workers: 1
-dataloader_num_workers: 4
+preprocessing_num_workers: 4
+dataloader_num_workers: 8
 
 ### output
 output_dir: ../../outputs/qwen3-vl-8b/dgm4-curriculum/stage2-grounding
@@ -37,8 +37,8 @@ save_only_model: false
 report_to: none
 
 ### train
-per_device_train_batch_size: 1
-gradient_accumulation_steps: 8
+per_device_train_batch_size: 2
+gradient_accumulation_steps: 4
 learning_rate: 3.0e-5
 num_train_epochs: 1.5
 lr_scheduler_type: cosine

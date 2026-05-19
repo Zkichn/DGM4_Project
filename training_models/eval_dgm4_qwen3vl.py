@@ -4,15 +4,15 @@
 This evaluator keeps the original DGM4 metric definitions where possible:
 
 - Binary: AUC / EER / ACC.
-- Multi-label: four atomic labels FS, FA, TS, TA with mAP / CF1 / OF1.
+- Multi-label: four atomic labels FS, FA, TS, TA with mAcc / CF1 / OF1.
 - Image grounding: IoUmean / IoU50 / IoU75 over all samples; empty GT and
   empty prediction counts as IoU=1, matching the original empty-box handling.
 - Text grounding: global token-position Precision / Recall / F1 from TP/FP/FN.
 
 For generative models there is no native classifier head.  Binary fake score is
 estimated by adding the prefix "Verdict:" after the prompt and comparing the
-next-token probability of FAKE vs REAL.  Multi-label mAP is computed from hard
-generated labels unless a future model writes calibrated per-label scores.
+next-token probability of FAKE vs REAL.  Multi-label mAcc/CF1/OF1 are computed
+from the generated atomic labels.
 """
 
 from __future__ import annotations
@@ -143,24 +143,9 @@ def compute_eer(labels: np.ndarray, scores: np.ndarray) -> float:
     return float((fpr[idx] + fnr[idx]) / 2)
 
 
-def average_precision(output: np.ndarray, target: np.ndarray) -> float:
-    order = np.argsort(-output)
-    pos_count = 0.0
-    total_count = 0.0
-    precision_at_i = 0.0
-    for idx in order:
-        label = target[idx]
-        if label == 1:
-            pos_count += 1
-        total_count += 1
-        if label == 1:
-            precision_at_i += pos_count / total_count
-    return float(precision_at_i / pos_count) if pos_count else 0.0
-
-
 def multilabel_metrics(scores: np.ndarray, targets: np.ndarray) -> dict[str, Any]:
-    ap = np.array([average_precision(scores[:, k], targets[:, k]) for k in range(targets.shape[1])])
     preds = scores >= 0
+    per_class_acc = np.mean(preds == targets, axis=0)
     nc = np.sum(targets * preds, axis=0).astype(float)
     npred = np.sum(preds, axis=0).astype(float)
     ngt = np.sum(targets == 1, axis=0).astype(float)
@@ -176,8 +161,23 @@ def multilabel_metrics(scores: np.ndarray, targets: np.ndarray) -> dict[str, Any
         p = float(nc[idx] / npred_safe[idx])
         r = float(nc[idx] / ngt[idx]) if ngt[idx] else 0.0
         f1 = float((2 * p * r) / (p + r)) if (p + r) else 0.0
-        per_label[key] = {"AP": float(ap[idx]), "precision": p, "recall": r, "F1": f1, "support": int(ngt[idx])}
-    return {"mAP": float(ap.mean()), "OP": op, "OR": or_, "OF1": of1, "CP": cp, "CR": cr, "CF1": cf1, "per_label": per_label}
+        per_label[key] = {
+            "accuracy": float(per_class_acc[idx]),
+            "precision": p,
+            "recall": r,
+            "F1": f1,
+            "support": int(ngt[idx]),
+        }
+    return {
+        "mAcc": float(per_class_acc.mean()),
+        "OP": op,
+        "OR": or_,
+        "OF1": of1,
+        "CP": cp,
+        "CR": cr,
+        "CF1": cf1,
+        "per_label": per_label,
+    }
 
 
 def box_iou_xyxy(pred: list[float] | None, gt: list[float] | None) -> float:
@@ -325,7 +325,7 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
     if y_true_ml:
         metrics.update(multilabel_metrics(np.array(y_score_ml), np.array(y_true_ml)))
     else:
-        metrics.update({"mAP": None, "OF1": None, "CF1": None})
+        metrics.update({"mAcc": None, "OF1": None, "CF1": None})
     if ious:
         metrics["IoUmean"] = float(np.mean(ious))
         metrics["IoU50"] = float(np.mean(np.array(ious) > 0.5))
@@ -358,7 +358,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--test-data", default="datasets/dgm4_stage3_final/test.json")
     parser.add_argument("--media-dir", default="/root/autodl-tmp/datasets")
     parser.add_argument("--output", default="outputs/qwen3-vl-8b/dgm4-curriculum/stage3-final/eval_dgm4_12metrics.json")
-    parser.add_argument("--batch-size", type=int, default=8)
+    parser.add_argument("--batch-size", type=int, default=24)
     parser.add_argument("--max-tokens", type=int, default=220)
     parser.add_argument("--limit", type=int, default=0)
     return parser.parse_args()
