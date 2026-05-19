@@ -1,0 +1,56 @@
+### model
+model_name_or_path: /root/autodl-tmp/hf-cache/models--Qwen--Qwen3-VL-8B-Instruct/snapshots/0c351dd01ed87e9c1b53cbc748cba10e6187ff3b
+image_max_pixels: 262144
+video_max_pixels: 16384
+trust_remote_code: true
+
+### method
+stage: sft
+do_train: true
+finetuning_type: lora
+lora_rank: 16
+lora_alpha: 32
+lora_dropout: 0.05
+lora_target: all
+gradient_checkpointing: true
+# True training resume from lora-sft-fast checkpoint-6618.
+# Optimizer (334MB) + scheduler + RNG all restored — loss curve will be
+# a continuous continuation of the same run, NOT a fresh training start.
+# Mutually exclusive with adapter_name_or_path per CLAUDE.md §3.4.
+resume_from_checkpoint: ../../outputs/qwen3-vl-8b/dgm4-instruct/lora-sft-5ep-resume/checkpoint-7000
+
+### dataset
+dataset_dir: ../../datasets/dgm4_instruct
+media_dir: /root/autodl-tmp/datasets
+dataset: dgm4_instruct_train
+eval_dataset: dgm4_instruct_val
+template: qwen3_vl_nothink
+default_system: "You are a multimodal forensic assistant. Your task is to assess whether an image-caption pair is authentic or manipulated. Check both visual evidence and caption-image consistency. If the sample is fake, identify the manipulation category and provide exact grounding fields for the manipulated image region and/or manipulated text token positions. If a modality is not manipulated, output an empty list for that grounding field. Always respond strictly in this five-line format: Verdict: [REAL or FAKE] Category: [category] Fake Image Box: [box or []] Fake Text Pos: [positions or []] Evidence: [concise grounded explanation]"
+cutoff_len: 2048
+preprocessing_num_workers: 1
+dataloader_num_workers: 4
+
+### output
+output_dir: ../../outputs/qwen3-vl-8b/dgm4-instruct/lora-sft-5ep-resume
+logging_dir: ../../logs/qwen3-vl-8b-dgm4-instruct-lora-sft-5ep-resume
+logging_steps: 10
+save_steps: 500
+plot_loss: true
+overwrite_output_dir: false
+save_only_model: false
+report_to: none
+
+### train
+per_device_train_batch_size: 2
+gradient_accumulation_steps: 4
+learning_rate: 1.0e-4
+num_train_epochs: 5.0
+lr_scheduler_type: cosine
+warmup_ratio: 0.1
+bf16: true
+ddp_timeout: 180000000
+
+### eval
+per_device_eval_batch_size: 1
+eval_strategy: steps
+eval_steps: 500
