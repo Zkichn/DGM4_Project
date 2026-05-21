@@ -11,7 +11,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import math
 import os
 import sys
 import time
@@ -182,27 +181,108 @@ def build_box_message(sample: dict[str, Any], parsed: dict[str, Any], box: list[
     ]
 
 
+def answer_token_ids(processor, answer: str) -> list[int]:
+    ids = processor.tokenizer.encode(answer, add_special_tokens=False)
+    if not ids:
+        raise ValueError(f"Tokenizer returned no ids for answer {answer!r}")
+    return ids
+
+
+def sequence_logprobs(model, processor, prompt_texts: list[str], image_inputs: list[Any], answer_ids: list[int]) -> torch.Tensor:
+    """Return log p(answer_ids | prompt) for each prompt.
+
+    We score the whole answer sequence instead of comparing a single token. This
+    avoids the Qwen tokenizer pitfall where " 0" and " 1" may share the same
+    leading whitespace token, which previously made every score exactly 0.5.
+    """
+    answer = torch.tensor(answer_ids, dtype=torch.long)
+    full_texts = [text + processor.tokenizer.decode(answer_ids, skip_special_tokens=False) for text in prompt_texts]
+    processor.tokenizer.padding_side = "left"
+    inputs = processor(text=full_texts, images=image_inputs, return_tensors="pt", padding=True)
+    inputs = {k: v.to(model.device) for k, v in inputs.items()}
+    answer = answer.to(model.device)
+
+    with torch.inference_mode():
+        logits = model(**inputs).logits
+    log_probs = torch.log_softmax(logits.float(), dim=-1)
+
+    scores: list[torch.Tensor] = []
+    input_ids = inputs["input_ids"]
+    attention_mask = inputs["attention_mask"]
+    answer_len = int(answer.numel())
+    for row in range(input_ids.shape[0]):
+        seq_len = int(attention_mask[row].sum().item())
+        end = input_ids.shape[1]
+        start = end - seq_len
+        answer_start = end - answer_len
+        # Token at position t is predicted by logits at t-1.
+        pos_scores = []
+        for offset, token_id in enumerate(answer):
+            logit_pos = answer_start + offset - 1
+            if logit_pos < start:
+                raise RuntimeError("Answer starts before the non-padding prefix; scoring prompt construction is invalid.")
+            pos_scores.append(log_probs[row, logit_pos, token_id])
+        scores.append(torch.stack(pos_scores).sum())
+    return torch.stack(scores)
+
+
 def score_messages(model, processor, messages: list[list[dict[str, Any]]], batch_size: int) -> list[float]:
     if not messages:
         return []
-    one_ids = processor.tokenizer.encode(" 1", add_special_tokens=False) or processor.tokenizer.encode("1", add_special_tokens=False)
-    zero_ids = processor.tokenizer.encode(" 0", add_special_tokens=False) or processor.tokenizer.encode("0", add_special_tokens=False)
-    one_id, zero_id = one_ids[0], zero_ids[0]
+    one_ids = answer_token_ids(processor, "1")
+    zero_ids = answer_token_ids(processor, "0")
     scores: list[float] = []
     processor.tokenizer.padding_side = "left"
     for start in range(0, len(messages), batch_size):
         batch = messages[start : start + batch_size]
         texts = [processor.apply_chat_template(m, tokenize=False, add_generation_prompt=True) for m in batch]
         image_inputs, _ = process_vision_info(batch, return_video_kwargs=False)
-        inputs = processor(text=texts, images=image_inputs, return_tensors="pt", padding=True)
-        inputs = {k: v.to(model.device) for k, v in inputs.items()}
-        with torch.inference_mode():
-            logits = model(**inputs).logits
-        last_idx = logits.shape[1] - 1
-        pair = torch.stack([logits[:, last_idx, one_id], logits[:, last_idx, zero_id]], dim=1)
+        one_logp = sequence_logprobs(model, processor, texts, image_inputs, one_ids)
+        zero_logp = sequence_logprobs(model, processor, texts, image_inputs, zero_ids)
+        pair = torch.stack([one_logp, zero_logp], dim=1)
         probs = torch.softmax(pair.float(), dim=1)[:, 0]
         scores.extend(float(x) for x in probs.detach().cpu())
     return scores
+
+
+def score_debug_stats(details: list[dict[str, Any]], limit: int = 5) -> dict[str, Any]:
+    rows = []
+    flat_token_scores = []
+    flat_box_scores = []
+    for detail in details:
+        parsed = detail.get("parsed") or {}
+        token_scores = parsed.get("token_rerank_scores") or {}
+        box_scores = parsed.get("box_rerank_scores") or []
+        if token_scores:
+            vals = [float(v) for v in token_scores.values()]
+            flat_token_scores.extend(vals)
+        if box_scores:
+            vals = [float(item["score"]) for item in box_scores]
+            flat_box_scores.extend(vals)
+        if len(rows) < limit and (token_scores or box_scores):
+            rows.append(
+                {
+                    "id": detail.get("id"),
+                    "gt_category": detail.get("gt_category"),
+                    "token_scores": token_scores,
+                    "box_scores": box_scores[:5],
+                }
+            )
+
+    def stats(values: list[float]) -> dict[str, Any]:
+        if not values:
+            return {"count": 0}
+        arr = np.array(values, dtype=float)
+        return {
+            "count": int(arr.size),
+            "min": float(arr.min()),
+            "max": float(arr.max()),
+            "mean": float(arr.mean()),
+            "std": float(arr.std()),
+            "all_equal_0_5": bool(np.allclose(arr, 0.5)),
+        }
+
+    return {"token_score_stats": stats(flat_token_scores), "box_score_stats": stats(flat_box_scores), "examples": rows}
 
 
 def recompute_metrics(data: list[dict[str, Any]], details: list[dict[str, Any]]) -> dict[str, Any]:
@@ -265,6 +345,8 @@ def main() -> None:
     ap.add_argument("--token-threshold", type=float, default=0.5)
     ap.add_argument("--box-image-size", type=int, default=512)
     ap.add_argument("--limit", type=int, default=0)
+    ap.add_argument("--print-score-debug", action="store_true", help="Print score distribution and a few candidate examples.")
+    ap.add_argument("--score-debug-examples", type=int, default=5)
     args = ap.parse_args()
 
     data = json.loads(Path(args.test_data).read_text(encoding="utf-8"))
@@ -339,10 +421,15 @@ def main() -> None:
         "rerank_time_s": time.perf_counter() - t0,
         "note": "Classification scores are reused from the original Stage2-v2 eval; grounding fields are reranked by 0/1 next-token probabilities."
     })
+    debug = score_debug_stats(new_details, args.score_debug_examples)
+    metrics["score_debug"] = {k: v for k, v in debug.items() if k != "examples"}
     out = Path(args.output)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps({"summary": metrics, "details": new_details}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     out.with_name(out.stem + "_summary.json").write_text(json.dumps(metrics, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    if args.print_score_debug:
+        print("===== SCORE DEBUG =====")
+        print(json.dumps(debug, ensure_ascii=False, indent=2))
     print(json.dumps(metrics, ensure_ascii=False, indent=2))
 
 
