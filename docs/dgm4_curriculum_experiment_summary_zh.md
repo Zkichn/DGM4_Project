@@ -1,6 +1,6 @@
 # DGM4 小数据指令微调与分阶段训练实验记录
 
-本文档记录 Qwen3-VL-8B 在 DGM4 小规模数据上的训练策略、数据集改造、阶段评测结果和后续 rerank 优化方向。指标统一采用当前项目中的 DGM4 评测脚本口径：二分类使用 AUC/EER/ACC，多标签分类使用 mAcc/CF1/OF1，图像定位使用 IoUmean/IoU50/IoU75，文本定位使用 Token Precision/Recall/F1。
+本文档记录 Qwen3-VL-8B 在 DGM4 小规模数据上的训练策略、数据集改造、阶段评测结果和 rerank 尝试结论。指标统一采用当前项目中的 DGM4 评测脚本口径：二分类使用 AUC/EER/ACC，多标签分类使用 mAcc/CF1/OF1，图像定位使用 IoUmean/IoU50/IoU75，文本定位使用 Token Precision/Recall/F1。
 
 ## 1. 指标口径说明
 
@@ -346,7 +346,7 @@ Stage2-v2 结果：
 
 但需要注意：Stage2-v2 相比旧 Stage2 也多训练了 1 epoch。因此严格消融还需要补一个 control：从旧 Stage2 checkpoint 继续使用旧 Stage2 数据/格式再训 1 epoch，用来区分“v2 数据策略收益”和“继续训练收益”。
 
-## 8. Rerank 优化尝试
+## 8. Rerank 优化尝试与终止结论
 
 为了把生成式 grounding 改得更接近判别式 head，设计了推理侧 rerank：
 
@@ -367,30 +367,78 @@ log p("0" | prompt)
 score = softmax([logp_1, logp_0])
 ```
 
-修复后的脚本：
+修复后继续做了两类小样本验证：
 
-- `training_models/rerank_grounding/rerank_stage2_v2.py`
-- `training_models/rerank_grounding/run_stage2_v2_rerank.sh`
+1. numeric scoring: `1` vs `0`
+2. word scoring: token 使用 `manipulated` vs `unchanged`，box 使用 `correct` vs `incorrect`
 
-建议下次先跑 5 条 smoke：
+### 8.1 numeric rerank 验证
 
-```bash
-cd /root/autodl-tmp/DGM4_Project/training_models
-git pull
-bash rerank_grounding/run_stage2_v2_rerank.sh smoke both 8 0.5 1 24
+numeric rerank 修复后不再全是 `0.5`，概率可以正常变化。但在 15 条样本上，和真实 label 对比后发现：直接使用原始 Stage2-v2 grounding 仍然最好。
+
+Token 策略扫描：
+
+| 策略 | Precision | Recall | F1 |
+|---|---:|---:|---:|
+| 原始预测 | 0.4118 | 0.8235 | 0.5490 |
+| 全候选 th=0.03 | 0.3889 | 0.8235 | 0.5283 |
+| 只保留原始预测 top8 | 0.4400 | 0.6471 | 0.5238 |
+| 原始预测过滤 th=0.03 | 0.4138 | 0.7059 | 0.5217 |
+| th=0.5 | 0.5000 | 0.1176 | 0.1905 |
+
+Box 策略扫描：
+
+| 策略 | IoUmean | IoU50 | IoU75 |
+|---|---:|---:|---:|
+| 原始 box | 0.6682 | 0.6667 | 0.6667 |
+| rerank 最高分 box | 0.6131 | 0.6667 | 0.4667 |
+
+结论：numeric rerank 的概率输出已正常，但概率和真实 grounding 正确性不够对齐。高阈值会删掉大量真 token，低阈值又无法超过原始预测；box 最高分选择反而降低 IoU。
+
+### 8.2 word rerank 验证
+
+为了避免 `0/1` 形式过于抽象，又尝试了语义标签判别：
+
+```text
+token: manipulated vs unchanged
+box: correct vs incorrect
 ```
 
-重点检查输出：
+20 条样本上的 token 策略扫描：
 
-```json
-"all_equal_0_5": false
-```
+| 策略 | Precision | Recall | F1 |
+|---|---:|---:|---:|
+| 原始预测 | 0.5532 | 0.8667 | 0.6753 |
+| word 低阈值过滤 | 0.5532 | 0.8667 | 0.6753 |
+| 全候选极低阈值 | 0.4918 | 1.0000 | 0.6593 |
+| 原始 top8 | 0.5758 | 0.6333 | 0.6032 |
 
-确认概率正常后再跑全量：
+Box 策略扫描：
 
-```bash
-bash rerank_grounding/run_stage2_v2_rerank.sh full both 12 0.5 1 24
-```
+| 策略 | IoUmean | IoU50 | IoU75 |
+|---|---:|---:|---:|
+| 原始 box | 0.6596 | 0.6500 | 0.6000 |
+| word rerank box | 0.6148 | 0.6500 | 0.4500 |
+
+结论：word rerank 也没有超过原始 Stage2-v2 grounding。token 分数整体过低，box 分数虽有区分度，但“选最高分框”不等于选最高 IoU 框。
+
+### 8.3 最终决定
+
+推理侧 rerank 路线暂时终止，不再作为后续主要优化方向。当前最稳策略是保留 Stage2-v2 原始 grounding 输出。
+
+原因：
+
+- 生成式模型可以给候选项打出不同概率，但这些概率没有可靠校准到 token/box 是否正确。
+- token rerank 会在 precision/recall 之间做无效交换，整体 F1 不如原始预测。
+- box rerank 的最高分候选框不如原始生成框。
+- 继续全量 rerank 会消耗大量显卡时间，但没有指标收益。
+
+后续如果要提升 grounding，不应继续做推理侧 rerank，而应回到训练侧改造：
+
+- Stage2-v3 增加更直接的 token mask 监督；
+- 构造更干净的 text grounding 样本；
+- 训练时显式惩罚多标 token；
+- 或者引入轻量判别式 token/box head，而不是用 prompt 后处理。
 
 ## 9. 当前结论
 
@@ -401,9 +449,9 @@ bash rerank_grounding/run_stage2_v2_rerank.sh full both 12 0.5 1 24
 5. 与论文 HAMMER 差距主要集中在 OF1、Text F1、IoU75。结构原因包括：HAMMER 使用判别式 head 和 ALBEF_4M 图文对齐预训练，而当前 Qwen 路线是生成式输出再解析。
 6. 后续要想进一步提升后几个指标，应优先尝试：
    - Stage2-control +1ep 消融；
-   - 修复后的 token/box rerank；
    - Stage3-v2 轻量 evidence 对齐；
-   - 如 rerank 有效，再构建 Stage2-v3 判别式 token 数据。
+   - Stage2-v3 判别式 token mask / 更强 text grounding 数据；
+   - 如资源允许，探索轻量判别式 token/box head。
 
 ## 10. 关键文件索引
 
@@ -430,8 +478,4 @@ Stage2-v2 结果：
 - `training_models/outputs/qwen3-vl-8b/dgm4-curriculum/stage2-grounding-v2/eval_stage2_v2_binary_multilabel_grounding.json`
 - `training_models/outputs/qwen3-vl-8b/dgm4-curriculum/stage2-grounding-v2/checkpoint-3121/trainer_state.json`
 
-Rerank：
-
-- `training_models/rerank_grounding/rerank_stage2_v2.py`
-- `training_models/rerank_grounding/run_stage2_v2_rerank.sh`
-- `training_models/rerank_grounding/monitor_shutdown_after_rerank.sh`
+Rerank 相关代码已从仓库移除；本路线保留为负结果记录，不再作为后续默认优化方向。
