@@ -1,0 +1,75 @@
+{
+  "stage": "stage1",
+  "source_dir": "C:\\Users\\Zkichn\\Desktop\\learn_AI\\DGM4_IDEA\\DGM4_Project\\training_models\\datasets\\dgm4_stage3_final",
+  "splits": {
+    "train": {
+      "samples": 20592,
+      "classes": {
+        "face_attribute": 2888,
+        "face_swap": 2876,
+        "text_attribute": 1251,
+        "orig": 7003,
+        "face_attribute&text_attribute": 780,
+        "text_swap": 1831,
+        "face_attribute&text_swap": 1554,
+        "face_swap&text_attribute": 1017,
+        "face_swap&text_swap": 1392
+      },
+      "atomic": {
+        "FS": 5285,
+        "FA": 5222,
+        "TS": 4777,
+        "TA": 3048
+      },
+      "grounding_tasks": {
+        "n/a": 20592
+      }
+    },
+    "val": {
+      "samples": 2206,
+      "classes": {
+        "orig": 1075,
+        "text_swap": 154,
+        "face_swap": 381,
+        "face_attribute&text_attribute": 24,
+        "face_attribute&text_swap": 89,
+        "face_swap&text_attribute": 33,
+        "face_attribute": 299,
+        "face_swap&text_swap": 97,
+        "text_attribute": 54
+      },
+      "atomic": {
+        "FS": 511,
+        "FA": 412,
+        "TS": 340,
+        "TA": 111
+      },
+      "grounding_tasks": {
+        "n/a": 2206
+      }
+    },
+    "test": {
+      "samples": 2207,
+      "classes": {
+        "face_attribute&text_swap": 68,
+        "text_swap": 136,
+        "orig": 1061,
+        "face_swap": 397,
+        "face_attribute": 318,
+        "face_swap&text_swap": 86,
+        "text_attribute": 74,
+        "face_attribute&text_attribute": 32,
+        "face_swap&text_attribute": 35
+      },
+      "atomic": {
+        "FS": 518,
+        "FA": 418,
+        "TS": 290,
+        "TA": 141
+      },
+      "grounding_tasks": {
+        "n/a": 2207
+      }
+    }
+  }
+}

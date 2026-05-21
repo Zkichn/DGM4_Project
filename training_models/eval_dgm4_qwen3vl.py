@@ -103,7 +103,7 @@ def parse_output(text: str) -> dict[str, Any] | None:
             for key in ATOMIC_KEYS:
                 if lower.startswith(f"{key.lower()}:"):
                     value = line.split(":", 1)[1].strip().lower()
-                    parsed[key] = 1 if value.startswith("y") else 0
+                    parsed[key] = 1 if value.startswith(("y", "1", "true")) else 0
 
     if "category" not in parsed and all(key in parsed for key in ATOMIC_KEYS):
         parsed["category"] = atoms_to_category([parsed[key] for key in ATOMIC_KEYS])
