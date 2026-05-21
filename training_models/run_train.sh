@@ -6,6 +6,17 @@
 set -e
 CONFIG_NAME="${1:-qwen3vl_8b_lora_sft_dgm4_instruct_autodl.yaml}"
 CONFIG_PATH="../../configs/${CONFIG_NAME}"
+PROJECT_DIR="/root/autodl-tmp/DGM4_Project"
+LOG_DIR="${PROJECT_DIR}/training_models/logs"
+mkdir -p "${LOG_DIR}"
+if [ -z "${DGM4_LOG_REDIRECTED:-}" ]; then
+    export DGM4_LOG_REDIRECTED=1
+    SAFE_CONFIG_NAME="${CONFIG_NAME//[^A-Za-z0-9_.-]/_}"
+    LOG_FILE="${LOG_DIR}/$(date +%Y%m%d_%H%M%S)_run_train_${SAFE_CONFIG_NAME}.log"
+    echo "${LOG_FILE}" > "${LOG_DIR}/run_train.latest.logpath"
+    echo "$$" > "${LOG_DIR}/run_train.pid"
+    exec > >(tee -a "${LOG_FILE}") 2>&1
+fi
 
 echo "================================================"
 echo "  DGM4 Training"
@@ -13,7 +24,7 @@ echo "  Config: ${CONFIG_NAME}"
 echo "  Started: $(date)"
 echo "================================================"
 
-cd /root/autodl-tmp/DGM4_Project/training_models/src/LLaMA-Factory
+cd "${PROJECT_DIR}/training_models/src/LLaMA-Factory"
 
 HF_HOME=/root/autodl-tmp/hf-cache \
 HF_HUB_OFFLINE=1 \

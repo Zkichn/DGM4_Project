@@ -5,6 +5,15 @@
 set -euo pipefail
 
 PROJECT_DIR="/root/autodl-tmp/DGM4_Project"
+LOG_DIR="${PROJECT_DIR}/training_models/logs"
+mkdir -p "${LOG_DIR}"
+if [ -z "${DGM4_LOG_REDIRECTED:-}" ]; then
+    export DGM4_LOG_REDIRECTED=1
+    LOG_FILE="${LOG_DIR}/$(date +%Y%m%d_%H%M%S)_run_curriculum_eval_only.log"
+    echo "${LOG_FILE}" > "${LOG_DIR}/run_curriculum_eval_only.latest.logpath"
+    echo "$$" > "${LOG_DIR}/run_curriculum_eval_only.pid"
+    exec > >(tee -a "${LOG_FILE}") 2>&1
+fi
 ADAPTER="${1:-${PROJECT_DIR}/training_models/outputs/qwen3-vl-8b/dgm4-curriculum/stage3-final}"
 BATCH_SIZE="${2:-24}"
 LIMIT="${3:-0}"

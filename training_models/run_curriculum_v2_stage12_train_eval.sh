@@ -10,6 +10,15 @@ SHUTDOWN_WHEN_DONE="${3:-0}"
 
 PROJECT_DIR="/root/autodl-tmp/DGM4_Project"
 TRAINING_DIR="${PROJECT_DIR}/training_models"
+LOG_DIR="${TRAINING_DIR}/logs"
+mkdir -p "${LOG_DIR}"
+if [ -z "${DGM4_LOG_REDIRECTED:-}" ]; then
+    export DGM4_LOG_REDIRECTED=1
+    LOG_FILE="${LOG_DIR}/$(date +%Y%m%d_%H%M%S)_run_curriculum_v2_stage12_train_eval.log"
+    echo "${LOG_FILE}" > "${LOG_DIR}/run_curriculum_v2_stage12_train_eval.latest.logpath"
+    echo "$$" > "${LOG_DIR}/run_curriculum_v2_stage12_train_eval.pid"
+    exec > >(tee -a "${LOG_FILE}") 2>&1
+fi
 TRAIN_DIR="${TRAINING_DIR}/src/LLaMA-Factory"
 CONFIG_DIR="../../configs"
 BASE_MODEL="${TRAINING_DIR}/base_models/Qwen3-VL-8B-Instruct"

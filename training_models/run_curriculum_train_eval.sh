@@ -9,6 +9,15 @@ EVAL_BATCH_SIZE="${1:-24}"
 EVAL_LIMIT="${2:-0}"
 
 PROJECT_DIR="/root/autodl-tmp/DGM4_Project"
+LOG_DIR="${PROJECT_DIR}/training_models/logs"
+mkdir -p "${LOG_DIR}"
+if [ -z "${DGM4_LOG_REDIRECTED:-}" ]; then
+    export DGM4_LOG_REDIRECTED=1
+    LOG_FILE="${LOG_DIR}/$(date +%Y%m%d_%H%M%S)_run_curriculum_train_eval.log"
+    echo "${LOG_FILE}" > "${LOG_DIR}/run_curriculum_train_eval.latest.logpath"
+    echo "$$" > "${LOG_DIR}/run_curriculum_train_eval.pid"
+    exec > >(tee -a "${LOG_FILE}") 2>&1
+fi
 TRAIN_DIR="${PROJECT_DIR}/training_models/src/LLaMA-Factory"
 CONFIG_DIR="../../configs"
 FINAL_ADAPTER="${PROJECT_DIR}/training_models/outputs/qwen3-vl-8b/dgm4-curriculum/stage3-final"
