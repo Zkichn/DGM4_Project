@@ -4,6 +4,7 @@ training_models/src/LLaMA-Factory/
 training_models/outputs/
 training_models/logs/
 !training_models/logs/
+training_models/logs/*
 !training_models/logs/.gitkeep
 # Python cache
 __pycache__/
