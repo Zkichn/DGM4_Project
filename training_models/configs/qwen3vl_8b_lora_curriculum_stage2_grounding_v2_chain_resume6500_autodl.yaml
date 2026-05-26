@@ -32,7 +32,7 @@ logging_dir: ../../logs/qwen3-vl-8b-dgm4-curriculum-stage2-grounding-v2-chain
 logging_steps: 10
 save_steps: 1000
 plot_loss: true
-overwrite_output_dir: true
+overwrite_output_dir: false
 save_only_model: false
 report_to: none
 
@@ -40,12 +40,12 @@ report_to: none
 per_device_train_batch_size: 3
 gradient_accumulation_steps: 3
 learning_rate: 5.0e-5
-num_train_epochs: 2.0
+max_steps: 6500
 lr_scheduler_type: cosine
 warmup_ratio: 0.05
 bf16: true
 ddp_timeout: 180000000
-resume_from_checkpoint: null
+resume_from_checkpoint: ../../outputs/qwen3-vl-8b/dgm4-curriculum/stage2-grounding-v2-chain/checkpoint-5500
 
 ### eval
 per_device_eval_batch_size: 4

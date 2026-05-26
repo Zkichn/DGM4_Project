@@ -39,7 +39,11 @@ cleanup() {
         fi
     else
         command -v autodl >/dev/null 2>&1 && autodl notify "DGM4 v2 chain failed (exit=${code})" 2>&1 || true
-        echo "DGM4 v2 chain failed with exit=${code}. Server left running for debugging." >&2
+        echo "DGM4 v2 chain failed with exit=${code}. Server will shut down if requested." >&2
+        if [ "${SHUTDOWN_WHEN_DONE}" = "1" ]; then
+            sleep 30
+            shutdown -h now 2>&1 || true
+        fi
     fi
 }
 trap cleanup EXIT
