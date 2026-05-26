@@ -1,0 +1,56 @@
+{
+  "stage": "stage2",
+  "samples": 2207,
+  "parsed_samples": 2207,
+  "batch_size": 16,
+  "AUC": 0.8867914131520036,
+  "EER": 0.19571702088812787,
+  "ACC": 0.80969642048029,
+  "mAcc": 0.9065473493429995,
+  "OP": 0.7130503144654088,
+  "OR": 0.6634967081199707,
+  "OF1": 0.6873815839333081,
+  "CP": 0.7418751848477451,
+  "CR": 0.6953592084533893,
+  "CF1": 0.7178644537194192,
+  "per_label": {
+    "FS": {
+      "accuracy": 0.8278205709107386,
+      "precision": 0.6468085106382979,
+      "recall": 0.5868725868725869,
+      "F1": 0.6153846153846154,
+      "support": 518
+    },
+    "FA": {
+      "accuracy": 0.8726778432260988,
+      "precision": 0.672544080604534,
+      "recall": 0.638755980861244,
+      "F1": 0.6552147239263804,
+      "support": 418
+    },
+    "TS": {
+      "accuracy": 0.9519710013593112,
+      "precision": 0.8407407407407408,
+      "recall": 0.7827586206896552,
+      "F1": 0.8107142857142857,
+      "support": 290
+    },
+    "TA": {
+      "accuracy": 0.9737199818758495,
+      "precision": 0.8074074074074075,
+      "recall": 0.7730496453900709,
+      "F1": 0.7898550724637682,
+      "support": 141
+    }
+  },
+  "IoUmean": 0.7039070986137204,
+  "IoU50": 0.7512460353420933,
+  "IoU75": 0.6724059809696421,
+  "Tok_Precision": 0.6658837345860247,
+  "Tok_Recall": 0.6321070234113713,
+  "Tok_F1": 0.6485559050614813,
+  "inference_time_s": 1979.55209489353,
+  "metric_note": "Stage-aware evaluation. Stage1 reports only binary and atomic multilabel metrics; Stage2 additionally reports image/text grounding.",
+  "recovered_from_log": "/root/autodl-tmp/DGM4_Project/training_models/logs/20260526_102907_run_stage2_v2_chain_resume_eval.log",
+  "recovery_note": "Reconstructed from training log after output directory was deleted; full per-sample eval JSON and adapter weights are not recoverable from this summary."
+}
