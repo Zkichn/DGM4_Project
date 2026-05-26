@@ -480,36 +480,35 @@ Stage2-v2 结果：
 
 Rerank 相关代码已从仓库移除；本路线保留为负结果记录，不再作为后续默认优化方向。
 
-## 11. Stage1-v2-chain ? Stage2-v2-chain ????
+## 11. Stage1-v2-chain 到 Stage2-v2-chain 结果
 
-?????????? Stage2-v2 ????????? Stage2-v2 ????? `stage2-grounding/checkpoint-2942` ?????????? `Stage1-v2` ?????????????????????????
+前面的 Stage2-v2 是从第一版 `stage2-grounding/checkpoint-2942` 继续训练得到的，没有经过 Stage1-v2 显式原子标签阶段。为了验证“先学原子标签，再学 grounding”的链式训练是否有效，后续补做了 clean chain 实验：
 
 ```text
 stage1-cls/checkpoint-3922
-  -> stage1-cls-v2-chain ?? 1.5 epoch
-  -> stage2-grounding-v2-chain ??? 6500 step
-  -> ???? adapter ? test split ???????
+  -> stage1-cls-v2-chain 继续训练 1.5 epoch
+  -> stage2-grounding-v2-chain 继续训练到 6500 step
+  -> 使用最后 adapter 在 test split 上推理和计算 12 个指标
 ```
 
-?????? `stage2-grounding-v2-chain` ? `6000/6242` step ???????????? `checkpoint-6000` ????????? checkpoint?????? checkpoint?????? `checkpoint-5500` ????? `max_steps=6500`??????? `stage2-grounding-v2-chain` ?????? adapter ?? test ???
+其中 `stage2-grounding-v2-chain` 原计划训练约 2 epoch，中途因为磁盘空间不足在接近 6000 step 时中断。清理 checkpoint 后，从 `checkpoint-5500` 恢复训练，并设置 `max_steps=6500`，最终使用 `stage2-grounding-v2-chain` 根目录 adapter 进行 test 评测。
 
-### 11.1 ???????
+### 11.1 训练配置摘要
 
-| ?? | ?? |
+| 项目 | 内容 |
 |---|---|
-| Stage1 ?? | `stage1-cls/checkpoint-3922` |
-| Stage1-v2-chain ?? | `stage1-cls-v2-chain` |
-| Stage1-v2-chain ?? | 1.5 epoch??? `checkpoint-3432` |
-| Stage2-v2-chain ?? | `stage1-cls-v2-chain` |
-| Stage2-v2-chain ??? | 2.0 epoch?? 6242 step |
-| ?????? | `max_steps=6500`??? epoch ? 2.0827 |
-| ?? checkpoint | ? `stage2-grounding-v2-chain/checkpoint-5500` resume |
-| ?????? | chain ????? 1000 step ???? |
-| ?????? | ?????????????????? |
+| Stage1 起点 | `stage1-cls/checkpoint-3922` |
+| Stage1-v2-chain 输出 | `stage1-cls-v2-chain/checkpoint-3432` |
+| Stage1-v2-chain 训练量 | 1.5 epoch |
+| Stage2-v2-chain 起点 | `stage1-cls-v2-chain` 最终 adapter |
+| Stage2-v2-chain 数据 | `dgm4_stage2_grounding_v2`，包含重采样和 grounding 子任务拆分 |
+| Stage2-v2-chain 训练量 | 继续到 `global_step=6500`，约 2.08 epoch |
+| 恢复方式 | 从 `stage2-grounding-v2-chain/checkpoint-5500` resume |
+| checkpoint 策略 | chain 实验 1000 step 保存一次，最终只保留最后 checkpoint |
 
-???????
+训练日志摘要：
 
-| ?? | ?? |
+| 指标 | 数值 |
 |---|---:|
 | global_step | 6500 |
 | epoch | 2.0827 |
@@ -517,14 +516,14 @@ stage1-cls/checkpoint-3922
 | eval_loss | 0.1319 |
 | train_runtime | 3028.95s |
 
-### 11.2 Stage2-v2-chain test ??
+### 11.2 Stage2-v2-chain test 结果
 
-?????
+结果文件：
 
 - `training_models/outputs/qwen3-vl-8b/dgm4-curriculum/stage2-grounding-v2-chain/eval_stage2_v2_chain_resume6500_binary_multilabel_grounding_summary.json`
 - `training_models/outputs/qwen3-vl-8b/dgm4-curriculum/stage2-grounding-v2-chain/eval_stage2_v2_chain_resume6500_binary_multilabel_grounding.json`
 
-| ?? | Stage2-v1 | Stage2-v2 | Stage2-v2-chain resume6500 |
+| 指标 | Stage2-v1 | Stage2-v2 | Stage2-v2-chain resume6500 |
 |---|---:|---:|---:|
 | AUC | 0.8812 | 0.8934 | 0.8868 |
 | EER | 0.2064 | 0.1951 | 0.1957 |
@@ -539,20 +538,95 @@ stage1-cls/checkpoint-3922
 | Tok Recall | 0.6279 | 0.6140 | 0.6321 |
 | Tok F1 | 0.5605 | 0.5968 | 0.6486 |
 
-### 11.3 ????
+### 11.3 结果解释
 
-??????????? grounding?`Tok Precision` ? Stage2-v2 ? `0.5805` ??? `0.6659`?`Tok Recall` ?? `0.6140` ????? `0.6321`??? `Tok F1` ?? `0.6486`?????????? Qwen3-VL ??????????????? `Stage1-v2 ?????? + Stage2-v2 ??? grounding ?? + ?? Stage2 ??` ??? token ???????????????????? token?precision ???????
+Stage2-v2-chain 对文本 grounding 的提升最明显。相比 Stage2-v2，`Tok Precision` 从 `0.5805` 提升到 `0.6659`，`Tok Recall` 从 `0.6140` 提升到 `0.6321`，`Tok F1` 从 `0.5968` 提升到 `0.6486`。这说明 `Stage1-v2 显式原子标签 + Stage2-v2 重采样和 grounding 子任务拆分 + 更长 Stage2 训练` 对 token grounding 是有效的，尤其明显改善了 token precision。
 
-??????? grounding ?? Stage2-v2 ?????AUC `0.8934 -> 0.8868`?ACC `0.8138 -> 0.8097`?IoUmean `0.7087 -> 0.7039`?IoU75 `0.6747 -> 0.6724`???????? Stage2 ???????????????????????????????????????
+但 image grounding 和二分类略有回落。相比 Stage2-v2，AUC 从 `0.8934` 降到 `0.8868`，ACC 从 `0.8138` 降到 `0.8097`，IoUmean 从 `0.7087` 降到 `0.7039`，IoU75 从 `0.6747` 降到 `0.6724`。这说明继续拉长 Stage2 训练会更偏向文本定位能力，但可能轻微牺牲整体检测和图像定位。
 
-? Stage2-v1 ?????????????? Stage2?ACC?OF1?CF1?IoU ? Tok F1 ??????????????????????? Stage2-v2 ?????????? token grounding?
+相比 Stage2-v1，Stage2-v2-chain 在 ACC、OF1、CF1、IoU 和 Tok F1 上仍然全面更强。因此 v2 数据范式和重采样策略整体有效；只是 Stage2-v2 与 Stage2-v2-chain 的取舍不同：前者更均衡，后者更偏文本 grounding。
 
-### 11.4 ???? checkpoint ??
+## 12. 最新结果总表与 HAMMER 论文对比
 
-?????????? 12 ???`Stage2-v2` ? `Stage2-v2-chain resume6500` ?????
+下表把当前关键阶段结果放在同一张表中，最后一行加入 HAMMER 原论文 Table 2 的结果，便于观察差距。
 
-- `Stage2-v2`?AUC?ACC?CF1?IoUmean/IoU75 ???????????????
-- `Stage2-v2-chain resume6500`?Token Precision/Recall/F1 ?????????? Stage1-v2 ????????? Stage2 ??? grounding ????
+注意：我们当前生成式评测使用 `mAcc` 替代原论文的 `mAP`；HAMMER 行中的对应列仍是论文 `mAP`。因此该列只能作为大致参考，不能视为完全相同指标。
 
-????????????????????????Stage2-v2 ??????? baseline?Stage2-v2-chain ??????? grounding?????????????????????????? Stage2-v2-chain ????????????????? 0.2-0.3 epoch ????????????? AUC/ACC ? IoU????? token F1 ????
+| 模型/阶段 | AUC | EER | ACC | mAcc/mAP | CF1 | OF1 | IoUmean | IoU50 | IoU75 | Tok Precision | Tok Recall | Tok F1 |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Stage2-v1 | 0.8812 | 0.2064 | 0.7916 | 0.9036 | 0.6991 | 0.6562 | 0.6816 | 0.7227 | 0.6371 | 0.5062 | 0.6279 | 0.5605 |
+| Stage2-v2 | 0.8934 | 0.1951 | 0.8138 | 0.9069 | 0.7194 | 0.6867 | 0.7087 | 0.7531 | 0.6747 | 0.5805 | 0.6140 | 0.5968 |
+| Stage2-v2-chain resume6500 | 0.8868 | 0.1957 | 0.8097 | 0.9065 | 0.7179 | 0.6874 | 0.7039 | 0.7512 | 0.6724 | 0.6659 | 0.6321 | 0.6486 |
+| Stage2-v2-chain + field weighted loss 0.3ep | 0.8843 | 0.2023 | 0.8034 | 0.9060 | 0.7116 | 0.6813 | 0.7044 | 0.7494 | 0.6733 | 0.6738 | 0.6062 | 0.6382 |
+| HAMMER 原论文 Table 2 | 0.9319 | 0.1410 | 0.8639 | 0.8622 | 0.7937 | 0.8037 | 0.7645 | 0.8375 | 0.7606 | 0.7501 | 0.6802 | 0.7135 |
 
+### 12.1 和 HAMMER 的差距
+
+以当前文本 grounding 最强的 `Stage2-v2-chain resume6500` 对比 HAMMER：
+
+| 指标 | Stage2-v2-chain | HAMMER | 差距 |
+|---|---:|---:|---:|
+| AUC | 0.8868 | 0.9319 | -0.0451 |
+| ACC | 0.8097 | 0.8639 | -0.0542 |
+| CF1 | 0.7179 | 0.7937 | -0.0758 |
+| OF1 | 0.6874 | 0.8037 | -0.1163 |
+| IoUmean | 0.7039 | 0.7645 | -0.0606 |
+| IoU75 | 0.6724 | 0.7606 | -0.0882 |
+| Tok Precision | 0.6659 | 0.7501 | -0.0842 |
+| Tok Recall | 0.6321 | 0.6802 | -0.0481 |
+| Tok F1 | 0.6486 | 0.7135 | -0.0649 |
+
+当前 Qwen3-VL 生成式路线已经接近 HAMMER 的 token recall，但 token precision、OF1 和高阈值图像定位仍有明显差距。这个差距符合模型结构差异：HAMMER 是判别式多任务模型，直接用分类 head、bbox head 和 token classification head 优化；当前方法是生成式五行输出，再解析为结构化结果。
+
+### 12.2 当前最合理的 checkpoint 选择
+
+如果目标是写论文主结果，建议同时报告两个 checkpoint：
+
+- `Stage2-v2`：作为更均衡的主 baseline，AUC、ACC、CF1、IoUmean/IoU75 更高。
+- `Stage2-v2-chain resume6500`：作为 grounding 强化版本，Token Precision/Recall/F1 最高，适合证明 Stage1-v2 + Stage2-v2 链式训练对文本定位有效。
+
+如果后续要继续优化，不建议单纯把 Stage2-v2-chain 再长训 2 epoch。更稳的方向是从 `stage2-grounding-v2-chain/checkpoint-6500` 继续做短程训练，例如 `0.2-0.3 epoch`，用更低学习率和字段加权 loss，目标是保住 AUC/ACC/IoU，同时继续提高 token F1。
+
+## 13. 字段加权 loss 短训实验
+
+为了尝试让模型更重视 DGM4 输出中的关键字段，尤其是原子标签、box 和 text position，在 LLaMA-Factory 的 SFT loss 上增加了字段级 token 权重。原始 SFT 是普通 causal LM cross entropy：
+
+```text
+L = - sum_t log p(y_t | x, y_<t)
+```
+
+字段加权版本为：
+
+```text
+L = - sum_t w_t log p(y_t | x, y_<t) / sum_t w_t
+```
+
+其中不同字段使用不同权重，例如格式字段较低，原子标签、category、box、text position 较高。该实验从 `stage2-grounding-v2-chain/checkpoint-6500` 继续短训 0.3 epoch，然后在 test split 上推理和计算 12 个指标。
+
+结果文件：
+
+- `training_models/outputs/qwen3-vl-8b/dgm4-curriculum/stage2-grounding-v2-chain-wloss-0p3ep/eval_stage2_v2_chain_wloss_0p3ep_binary_multilabel_grounding_summary.json`
+- `training_models/outputs/qwen3-vl-8b/dgm4-curriculum/stage2-grounding-v2-chain-wloss-0p3ep/eval_stage2_v2_chain_wloss_0p3ep_binary_multilabel_grounding.json`
+
+### 13.1 与 Stage2-v2-chain 对比
+
+| 指标 | Stage2-v2-chain resume6500 | Field weighted loss 0.3ep | 变化 |
+|---|---:|---:|---:|
+| AUC | 0.8868 | 0.8843 | -0.0025 |
+| EER | 0.1957 | 0.2023 | +0.0066 |
+| ACC | 0.8097 | 0.8034 | -0.0063 |
+| mAcc | 0.9065 | 0.9060 | -0.0005 |
+| CF1 | 0.7179 | 0.7116 | -0.0063 |
+| OF1 | 0.6874 | 0.6813 | -0.0061 |
+| IoUmean | 0.7039 | 0.7044 | +0.0005 |
+| IoU50 | 0.7512 | 0.7494 | -0.0018 |
+| IoU75 | 0.6724 | 0.6733 | +0.0009 |
+| Tok Precision | 0.6659 | 0.6738 | +0.0079 |
+| Tok Recall | 0.6321 | 0.6062 | -0.0259 |
+| Tok F1 | 0.6486 | 0.6382 | -0.0104 |
+
+### 13.2 实验结论
+
+字段加权 loss 确实让 token prediction 更保守，Token Precision 从 `0.6659` 提升到 `0.6738`，但 Token Recall 明显下降，最终 Tok F1 从 `0.6486` 降到 `0.6382`。同时 AUC、ACC、CF1、OF1 也有轻微回落。
+
+因此，当前字段加权 loss 不是更好的主结果。它可以作为一次负向消融记录：只靠字段权重会让模型减少多标 token，但会牺牲召回和整体分类稳定性。后续如果继续做 loss 设计，应考虑更细粒度的 token false-positive 惩罚或 focal loss，而不是简单按字段整体加权。
