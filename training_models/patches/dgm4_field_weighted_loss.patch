@@ -1,0 +1,138 @@
+diff --git a/src/llamafactory/hparams/finetuning_args.py b/src/llamafactory/hparams/finetuning_args.py
+index 2a1ecc94..aedf45fa 100644
+--- a/src/llamafactory/hparams/finetuning_args.py
++++ b/src/llamafactory/hparams/finetuning_args.py
+@@ -524,6 +524,34 @@ class FinetuningArguments(
+         default=1.0,
+         metadata={"help": "The alpha parameter for EAFT loss to control the power of adaptive weight."},
+     )
++    use_dgm4_field_weighted_loss: bool = field(
++        default=False,
++        metadata={"help": "Whether to use DGM4 field-aware token weighted SFT loss."},
++    )
++    dgm4_format_weight: float = field(
++        default=0.5,
++        metadata={"help": "Loss weight for field names, punctuation and newline tokens in DGM4 outputs."},
++    )
++    dgm4_verdict_weight: float = field(
++        default=1.0,
++        metadata={"help": "Loss weight for Verdict value tokens in DGM4 outputs."},
++    )
++    dgm4_atomic_weight: float = field(
++        default=2.0,
++        metadata={"help": "Loss weight for FS/FA/TS/TA value tokens in DGM4 outputs."},
++    )
++    dgm4_category_weight: float = field(
++        default=1.5,
++        metadata={"help": "Loss weight for Category value tokens in DGM4 outputs."},
++    )
++    dgm4_box_weight: float = field(
++        default=1.5,
++        metadata={"help": "Loss weight for Fake Image Box value tokens in DGM4 outputs."},
++    )
++    dgm4_text_pos_weight: float = field(
++        default=2.5,
++        metadata={"help": "Loss weight for Fake Text Pos value tokens in DGM4 outputs."},
++    )
+     freeze_vision_tower: bool = field(
+         default=True,
+         metadata={"help": "Whether ot not to freeze the vision tower in MLLM training."},
+diff --git a/src/llamafactory/train/sft/trainer.py b/src/llamafactory/train/sft/trainer.py
+index dfed95a5..31d31894 100644
+--- a/src/llamafactory/train/sft/trainer.py
++++ b/src/llamafactory/train/sft/trainer.py
+@@ -23,6 +23,7 @@ from typing import TYPE_CHECKING, Any, Optional, Union
+ 
+ import numpy as np
+ import torch
++import torch.nn.functional as F
+ from transformers import Seq2SeqTrainer
+ from typing_extensions import override
+ 
+@@ -127,6 +128,74 @@ class CustomSeq2SeqTrainer(Seq2SeqTrainer):
+         if training_args.fp8 and hasattr(self, "accelerator"):  # verify FP8 status after trainer initialization
+             verify_fp8_status(self.accelerator, training_args)
+ 
++    def _get_dgm4_field_weight(self, text_before_token: str) -> float:
++        r"""Return field-aware loss weight for the next generated label token."""
++        line = text_before_token.split("\n")[-1]
++        finetuning_args = self.finetuning_args
++
++        if ":" not in line:
++            return finetuning_args.dgm4_format_weight
++
++        field, value_prefix = line.split(":", 1)
++        field = field.strip()
++        if not value_prefix:
++            return finetuning_args.dgm4_format_weight
++
++        if field == "Verdict":
++            return finetuning_args.dgm4_verdict_weight
++        if field in {"FS", "FA", "TS", "TA"}:
++            return finetuning_args.dgm4_atomic_weight
++        if field == "Category":
++            return finetuning_args.dgm4_category_weight
++        if field == "Fake Image Box":
++            return finetuning_args.dgm4_box_weight
++        if field == "Fake Text Pos":
++            return finetuning_args.dgm4_text_pos_weight
++
++        return 1.0
++
++    def _build_dgm4_token_weights(self, labels: "torch.Tensor") -> "torch.Tensor":
++        r"""Build token weights aligned with labels for DGM4 field-aware SFT.
++
++        The original SFT CE is kept as the default path. This helper is only used
++        when `use_dgm4_field_weighted_loss` is enabled in the training config.
++        """
++        weights = torch.ones_like(labels, dtype=torch.float32)
++        tokenizer = getattr(self.processing_class, "tokenizer", self.processing_class)
++
++        for row_idx, row in enumerate(labels.detach().cpu().tolist()):
++            generated_text = ""
++            for col_idx, token_id in enumerate(row):
++                if token_id == IGNORE_INDEX:
++                    continue
++
++                weights[row_idx, col_idx] = self._get_dgm4_field_weight(generated_text)
++                generated_text += tokenizer.decode([token_id], skip_special_tokens=False)
++
++        weights = weights.to(labels.device)
++        weights = weights.masked_fill(labels.eq(IGNORE_INDEX), 0.0)
++        return weights
++
++    def _compute_dgm4_field_weighted_loss(self, model, inputs, return_outputs: bool = False):
++        labels = inputs["labels"]
++        outputs = model(**inputs)
++        logits = outputs.logits
++
++        shift_logits = logits[..., :-1, :].contiguous()
++        shift_labels = labels[..., 1:].contiguous()
++        shift_weights = self._build_dgm4_token_weights(labels)[..., 1:].contiguous()
++
++        loss_per_token = F.cross_entropy(
++            shift_logits.view(-1, shift_logits.size(-1)).float(),
++            shift_labels.view(-1),
++            ignore_index=IGNORE_INDEX,
++            reduction="none",
++        ).view_as(shift_labels)
++
++        valid_weight_sum = shift_weights.sum().clamp_min(1.0)
++        loss = (loss_per_token * shift_weights).sum() / valid_weight_sum
++        return (loss, outputs) if return_outputs else loss
++
+     @override
+     def create_optimizer(self) -> "torch.optim.Optimizer":
+         if self.optimizer is None:
+@@ -158,6 +227,11 @@ class CustomSeq2SeqTrainer(Seq2SeqTrainer):
+                 ref_logits = ref_outputs.logits
+             outputs = model(**inputs)
+             return self.compute_loss_func(outputs, inputs["labels"], ref_logits)
++        elif self.finetuning_args.use_dgm4_field_weighted_loss:
++            # Original SFT CE path is intentionally kept below for quick rollback:
++            # return super().compute_loss(model, inputs, *args, **kwargs)
++            return_outputs = kwargs.get("return_outputs", False)
++            return self._compute_dgm4_field_weighted_loss(model, inputs, return_outputs=return_outputs)
+         else:
+             return super().compute_loss(model, inputs, *args, **kwargs)
+ 
