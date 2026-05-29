@@ -1,0 +1,44 @@
+{
+  "train": {
+    "samples": 28086,
+    "class_counts": {
+      "face_attribute&text_swap": 3483,
+      "face_swap&text_attribute": 2295,
+      "text_attribute": 1885,
+      "orig": 7003,
+      "face_swap": 2876,
+      "face_attribute&text_attribute": 1753,
+      "face_attribute": 2888,
+      "text_swap": 2741,
+      "face_swap&text_swap": 3162
+    }
+  },
+  "val": {
+    "samples": 2206,
+    "class_counts": {
+      "orig": 1075,
+      "text_swap": 154,
+      "face_swap": 381,
+      "face_attribute&text_attribute": 24,
+      "face_attribute&text_swap": 89,
+      "face_swap&text_attribute": 33,
+      "face_attribute": 299,
+      "face_swap&text_swap": 97,
+      "text_attribute": 54
+    }
+  },
+  "test": {
+    "samples": 2207,
+    "class_counts": {
+      "face_attribute&text_swap": 68,
+      "text_swap": 136,
+      "orig": 1061,
+      "face_swap": 397,
+      "face_attribute": 318,
+      "face_swap&text_swap": 86,
+      "text_attribute": 74,
+      "face_attribute&text_attribute": 32,
+      "face_swap&text_attribute": 35
+    }
+  }
+}

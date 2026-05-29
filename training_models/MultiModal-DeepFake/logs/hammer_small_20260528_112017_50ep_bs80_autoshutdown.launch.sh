@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd /root/autodl-tmp/DGM4_Project/training_models/MultiModal-DeepFake
+export PYTHONUNBUFFERED=1
+export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+export TOKENIZERS_PARALLELISM=false
+export OMP_NUM_THREADS=4
+PY=/root/miniconda3/bin/python \
+EXP_ID=hammer_small_20260528_112017_50ep_bs80_autoshutdown \
+EPOCHS=50 \
+WARMUP_EPOCHS=10 \
+BATCH_SIZE_TRAIN=80 \
+BATCH_SIZE_VAL=128 \
+TEST_BATCH_SIZE=128 \
+NUM_GPU=1 \
+MODEL_SAVE_EPOCH=10 \
+SHUTDOWN_WHEN_DONE=1 \
+PORT=29680 \
+bash run_hammer_small_train_eval.sh

@@ -558,6 +558,9 @@ Stage2-v2-chain 对文本 grounding 的提升最明显。相比 Stage2-v2，`Tok
 | Stage2-v2 | 0.8934 | 0.1951 | 0.8138 | 0.9069 | 0.7194 | 0.6867 | 0.7087 | 0.7531 | 0.6747 | 0.5805 | 0.6140 | 0.5968 |
 | Stage2-v2-chain resume6500 | 0.8868 | 0.1957 | 0.8097 | 0.9065 | 0.7179 | 0.6874 | 0.7039 | 0.7512 | 0.6724 | 0.6659 | 0.6321 | 0.6486 |
 | Stage2-v2-chain + field weighted loss 0.3ep | 0.8843 | 0.2023 | 0.8034 | 0.9060 | 0.7116 | 0.6813 | 0.7044 | 0.7494 | 0.6733 | 0.6738 | 0.6062 | 0.6382 |
+| HAMMER small-data bs80 test best | 0.7926 | 0.2888 | 0.7118 | 0.5752 | 0.5302 | 0.5332 | 0.0669 | 0.0403 | 0.0036 | 0.6464 | 0.3843 | 0.4820 |
+| HAMMER resampled-v2 bs75 test best | 0.8043 | 0.2705 | 0.7313 | 0.5844 | 0.5165 | 0.5209 | 0.6095 | 0.6507 | 0.5473 | 0.6632 | 0.3900 | 0.4912 |
+| HAMMER resampled-v2 bs75 test epoch49 | 0.7976 | 0.2731 | 0.7218 | 0.5785 | 0.5285 | 0.5365 | 0.5975 | 0.6434 | 0.5356 | 0.6718 | 0.4119 | 0.5107 |
 | HAMMER 原论文 Table 2 | 0.9319 | 0.1410 | 0.8639 | 0.8622 | 0.7937 | 0.8037 | 0.7645 | 0.8375 | 0.7606 | 0.7501 | 0.6802 | 0.7135 |
 
 ### 12.1 和 HAMMER 的差距
@@ -630,3 +633,54 @@ L = - sum_t w_t log p(y_t | x, y_<t) / sum_t w_t
 字段加权 loss 确实让 token prediction 更保守，Token Precision 从 `0.6659` 提升到 `0.6738`，但 Token Recall 明显下降，最终 Tok F1 从 `0.6486` 降到 `0.6382`。同时 AUC、ACC、CF1、OF1 也有轻微回落。
 
 因此，当前字段加权 loss 不是更好的主结果。它可以作为一次负向消融记录：只靠字段权重会让模型减少多标 token，但会牺牲召回和整体分类稳定性。后续如果继续做 loss 设计，应考虑更细粒度的 token false-positive 惩罚或 focal loss，而不是简单按字段整体加权。
+
+## 14. HAMMER 小数据复现实验记录
+
+本节记录在服务器 `/root/autodl-tmp/DGM4_Project/training_models/MultiModal-DeepFake` 下完成的 HAMMER 判别式模型复现实验，用作生成式路线的同数据规模对照。所有数值均由当前项目脚本输出的百分制结果除以 100 得到。
+
+### 14.1 已完成实验
+
+| 实验 | 训练数据 | batch size | 起点权重 | 训练轮次 | 结果目录 |
+|---|---:|---:|---|---:|---|
+| HAMMER small-data bs80 | 17,648 | 80 | `ALBEF_4M.pth` | 50 | `results/loghammer_small_20260528_112017_50ep_bs80_autoshutdown` |
+| HAMMER resampled-v2 bs75 | 28,086 | 75 | `ALBEF_4M.pth` + `checkpoint_best` resume | 50 | `results/loghammer_resampled_v2_resume_20260528_1646_bs75_lrhalf` |
+
+`HAMMER resampled-v2 bs75` 使用 `dgm4_stage2_grounding_v2/train.json` 重采样数据转换得到的 HAMMER metadata。训练中途 batch size 从 80 降到 75 以避免显存溢出；磁盘满导致一次 `checkpoint_10.pth` 写入失败，清理中间权重后从当时最新 `checkpoint_best.pth` 继续训练。最终 checkpoint 策略为每 10 epoch 保存一次周期权重，并保留 `checkpoint_best.pth`。
+
+### 14.2 验证集各指标最佳 epoch
+
+HAMMER 当前训练脚本只按 `val_AUC_cls` 保存 `checkpoint_best.pth`，因此分类、图像定位和文本定位的最佳 epoch 不完全一致。下表记录验证集上各指标出现的最佳轮次。
+
+| 指标 | small-data bs80 最佳 epoch | small-data bs80 | resampled-v2 bs75 最佳 epoch | resampled-v2 bs75 |
+|---|---:|---:|---:|---:|
+| AUC | 6 | 0.7966 | 32 | 0.8145 |
+| ACC | 28 | 0.7248 | 32 | 0.7353 |
+| EER | 28 | 0.2744 | 34 | 0.2644 |
+| mAP | 29 | 0.5822 | 12 | 0.5956 |
+| OF1 | 49 | 0.5559 | 42 | 0.5776 |
+| CF1 | 49 | 0.5517 | 42 | 0.5722 |
+| mACC | 16 | 0.8736 | 31 | 0.8764 |
+| IoUmean | 42 | 0.6249 | 24 | 0.6304 |
+| IoU50 | 42 | 0.6618 | 24 | 0.6691 |
+| IoU75 | 42 | 0.5603 | 24 | 0.5612 |
+| IoU95 | 27 | 0.5018 | 24 | 0.4828 |
+| Tok F1 | 36 | 0.5833 | 27 | 0.6037 |
+
+从验证集看，重采样版本在 AUC、ACC、EER、mAP、OF1/CF1 和 Tok F1 上均优于原始 small-data 版本，说明长尾类别重采样对小数据 HAMMER 是有效的。图像定位的 IoUmean/IoU50/IoU75 也略有提升，但幅度不大。
+
+### 14.3 Test split 结果
+
+| 模型/checkpoint | AUC | EER | ACC | mAP | CF1 | OF1 | mACC | IoUmean | IoU50 | IoU75 | IoU95 | Tok P | Tok R | Tok F1 |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| small-data bs80 `checkpoint_best` | 0.7926 | 0.2888 | 0.7118 | 0.5752 | 0.5302 | 0.5332 | 0.8711 | 0.0669 | 0.0403 | 0.0036 | 0.0000 | 0.6464 | 0.3843 | 0.4820 |
+| small-data bs80 `checkpoint_49` | 0.7715 | 0.2865 | 0.7141 | 0.5741 | 0.5417 | 0.5410 | 0.8670 | 0.5979 | 0.6402 | 0.5383 | 0.4345 | 0.6360 | 0.4621 | 0.5353 |
+| resampled-v2 bs75 `checkpoint_best` / epoch32 | 0.8043 | 0.2705 | 0.7313 | 0.5844 | 0.5165 | 0.5209 | 0.8612 | 0.6095 | 0.6507 | 0.5473 | 0.4295 | 0.6632 | 0.3900 | 0.4912 |
+| resampled-v2 bs75 `checkpoint_49` | 0.7976 | 0.2731 | 0.7218 | 0.5785 | 0.5285 | 0.5365 | 0.8653 | 0.5975 | 0.6434 | 0.5356 | 0.4087 | 0.6718 | 0.4119 | 0.5107 |
+
+`checkpoint_best` 是按验证集 AUC 保存的，因此 test 上分类指标更好；`checkpoint_49` 的 OF1、CF1、四个原子标签 F1 和 Tok F1 更好，但 AUC/ACC/IoU 略低。后续如果继续跑 HAMMER 对照，建议同时保存 `best_auc`、`best_iou`、`best_tokf1` 和 `best_cf1`，避免多任务模型被单一 AUC 选择策略限制。
+
+### 14.4 与生成式 Stage2-v2 的关系
+
+当前最强生成式结果 `Stage2-v2-chain resume6500` 在同一 test 口径下达到 AUC `0.8868`、ACC `0.8097`、CF1 `0.7179`、OF1 `0.6874`、IoUmean `0.7039`、Tok F1 `0.6486`。相比本节 small-data HAMMER 和 resampled-v2 HAMMER，对小规模数据更稳定，尤其是多标签分类和文本定位明显更强。
+
+因此可以把 HAMMER 小数据复现作为判别式小数据 baseline：在约 2-3 万训练样本规模下，即使加载 `ALBEF_4M.pth`，HAMMER 仍明显低于 23w 规模论文结果；而当前生成式 Stage2-v2 系列在同样小数据规模下表现更接近论文 HAMMER。这一对比可以支撑“生成式 MLLM 路线在小规模、长尾、多粒度 DGM4 数据上具备更好的数据效率”的论点。
