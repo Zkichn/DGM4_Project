@@ -1,0 +1,52 @@
+### model
+model_name_or_path: /root/autodl-tmp/DGM4_Project/training_models/base_models/llava-v1.6-mistral-7b-hf
+trust_remote_code: true
+
+### method
+stage: sft
+do_train: true
+finetuning_type: lora
+lora_rank: 16
+lora_alpha: 32
+lora_dropout: 0.05
+lora_target: all
+freeze_vision_tower: true
+gradient_checkpointing: true
+
+### dataset
+dataset_dir: ../../datasets/dgm4_stage1_cls
+media_dir: /root/autodl-tmp/datasets
+dataset: dgm4_stage1_cls_train
+eval_dataset: dgm4_stage1_cls_val
+template: llava_next_mistral
+default_system: "You are a multimodal forensic classifier. Determine whether the image-caption pair is REAL or FAKE, and identify the four atomic manipulation labels: FS for face_swap, FA for face_attribute, TS for text_swap, and TA for text_attribute. Respond strictly in this five-line format: Verdict: [REAL or FAKE] FS: [yes or no] FA: [yes or no] TS: [yes or no] TA: [yes or no]"
+cutoff_len: 4096
+preprocessing_num_workers: 4
+dataloader_num_workers: 8
+
+### output
+output_dir: ../../outputs/llava-next-mistral-7b/dgm4-curriculum/stage1-cls
+logging_dir: ../../logs/llava-next-mistral-7b-dgm4-curriculum-stage1-cls
+logging_steps: 10
+save_steps: 500
+save_total_limit: 2
+plot_loss: true
+overwrite_output_dir: true
+save_only_model: false
+report_to: none
+
+### train
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 8
+learning_rate: 1.0e-4
+num_train_epochs: 2.0
+lr_scheduler_type: cosine
+warmup_ratio: 0.1
+bf16: true
+ddp_timeout: 180000000
+resume_from_checkpoint: null
+
+### eval
+per_device_eval_batch_size: 1
+eval_strategy: steps
+eval_steps: 500
