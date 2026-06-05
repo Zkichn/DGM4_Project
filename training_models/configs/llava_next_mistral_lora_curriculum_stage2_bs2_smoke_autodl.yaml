@@ -1,0 +1,47 @@
+### model
+model_name_or_path: /root/autodl-tmp/DGM4_Project/training_models/base_models/llava-v1.6-mistral-7b-hf
+trust_remote_code: true
+
+### method
+stage: sft
+do_train: true
+finetuning_type: lora
+lora_rank: 16
+lora_alpha: 32
+lora_dropout: 0.05
+lora_target: all
+freeze_vision_tower: true
+gradient_checkpointing: true
+adapter_name_or_path: ../../outputs/llava-next-mistral-7b/dgm4-curriculum/stage1-cls
+
+### dataset
+dataset_dir: ../../datasets/dgm4_stage2_grounding_v2
+media_dir: /root/autodl-tmp/datasets
+dataset: dgm4_stage2_grounding_v2_train
+template: llava_next_mistral
+default_system: "You are a multimodal forensic grounding assistant. Determine authenticity, atomic labels FS/FA/TS/TA, final category, and requested grounding fields. Mark only minimal manipulated text token positions and do not include unchanged surrounding words. Respond only with the requested fields."
+cutoff_len: 4096
+preprocessing_num_workers: 1
+dataloader_num_workers: 2
+
+### output
+output_dir: ../../outputs/_smoke_stage2_bs2
+logging_dir: ../../logs/_smoke_stage2_bs2
+logging_steps: 1
+save_steps: 10
+save_total_limit: 1
+plot_loss: false
+overwrite_output_dir: true
+save_only_model: false
+report_to: none
+
+### train
+per_device_train_batch_size: 2
+gradient_accumulation_steps: 4
+learning_rate: 5.0e-5
+max_steps: 10
+lr_scheduler_type: constant
+warmup_ratio: 0.0
+bf16: true
+ddp_timeout: 180000000
+resume_from_checkpoint: null

@@ -1,0 +1,101 @@
+{
+  "samples": 2207,
+  "parsed_samples": 2207,
+  "batch_size": 8,
+  "stage": "stage2",
+  "AUC": 0.9300414670212993,
+  "EER": 0.14684893404588845,
+  "ACC": 0.8522881739918441,
+  "mAcc": 0.9205935659265972,
+  "OP": 0.7577399380804953,
+  "OR": 0.7161667885881492,
+  "OF1": 0.7363670552839413,
+  "CP": 0.78552056036638,
+  "CR": 0.7200168431691387,
+  "CF1": 0.7513437165908451,
+  "per_label": {
+    "FS": {
+      "accuracy": 0.8654281830539193,
+      "precision": 0.7065420560747664,
+      "recall": 0.7297297297297297,
+      "F1": 0.7179487179487178,
+      "support": 518
+    },
+    "FA": {
+      "accuracy": 0.8975985500679655,
+      "precision": 0.7448979591836735,
+      "recall": 0.6985645933014354,
+      "F1": 0.7209876543209877,
+      "support": 418
+    },
+    "TS": {
+      "accuracy": 0.9442682374263707,
+      "precision": 0.8493723849372385,
+      "recall": 0.7,
+      "F1": 0.7674858223062381,
+      "support": 290
+    },
+    "TA": {
+      "accuracy": 0.9750792931581332,
+      "precision": 0.8412698412698413,
+      "recall": 0.75177304964539,
+      "F1": 0.7940074906367042,
+      "support": 141
+    }
+  },
+  "IoUmean": 0.7073975995514065,
+  "IoU50": 0.7575894879927504,
+  "IoU75": 0.6180335296782963,
+  "Tok_Precision": 0.6093257718966604,
+  "Tok_Recall": 0.5390189520624303,
+  "Tok_F1": 0.5720201123927833,
+  "per_class": {
+    "face_attribute&text_swap": {
+      "n": 68,
+      "verdict_acc": 0.9705882352941176,
+      "category_acc": 0.47058823529411764
+    },
+    "text_swap": {
+      "n": 136,
+      "verdict_acc": 0.8088235294117647,
+      "category_acc": 0.6323529411764706
+    },
+    "orig": {
+      "n": 1061,
+      "verdict_acc": 0.8652214891611687,
+      "category_acc": 0.8652214891611687
+    },
+    "face_swap": {
+      "n": 397,
+      "verdict_acc": 0.8085642317380353,
+      "category_acc": 0.6977329974811083
+    },
+    "face_attribute": {
+      "n": 318,
+      "verdict_acc": 0.8113207547169812,
+      "category_acc": 0.6729559748427673
+    },
+    "face_swap&text_swap": {
+      "n": 86,
+      "verdict_acc": 0.9534883720930233,
+      "category_acc": 0.5232558139534884
+    },
+    "text_attribute": {
+      "n": 74,
+      "verdict_acc": 0.8108108108108109,
+      "category_acc": 0.5540540540540541
+    },
+    "face_attribute&text_attribute": {
+      "n": 32,
+      "verdict_acc": 0.96875,
+      "category_acc": 0.5
+    },
+    "face_swap&text_attribute": {
+      "n": 35,
+      "verdict_acc": 1.0,
+      "category_acc": 0.5714285714285714
+    }
+  },
+  "inference_time_s": 4343.980639913119,
+  "metric_note": "LLaVA-NeXT-Mistral evaluation. Stage1 reports only binary+multilabel; Stage2 adds image+text grounding."
+}
