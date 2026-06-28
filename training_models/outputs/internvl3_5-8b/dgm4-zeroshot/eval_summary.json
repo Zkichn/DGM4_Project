@@ -1,0 +1,98 @@
+{
+  "samples": 2207,
+  "parsed_samples": 2207,
+  "AUC": 0.6062154475757172,
+  "EER": 0.42897518393691614,
+  "ACC": 0.5269596737652923,
+  "mAcc": 0.6915496148618033,
+  "OP": 0.19321266968325793,
+  "OR": 0.31236283833211415,
+  "OF1": 0.23874755381604698,
+  "CP": 0.10711418983829249,
+  "CR": 0.24603810742649218,
+  "CF1": 0.1492510327722761,
+  "per_label": {
+    "FS": {
+      "accuracy": 0.47213411871318534,
+      "precision": 0.24903025601241272,
+      "recall": 0.6196911196911197,
+      "F1": 0.35528500276701713,
+      "support": 518
+    },
+    "FA": {
+      "accuracy": 0.8042591753511554,
+      "precision": 0.0625,
+      "recall": 0.0023923444976076554,
+      "F1": 0.004608294930875576,
+      "support": 418
+    },
+    "TS": {
+      "accuracy": 0.5568645219755324,
+      "precision": 0.11692650334075724,
+      "recall": 0.3620689655172414,
+      "F1": 0.1767676767676768,
+      "support": 290
+    },
+    "TA": {
+      "accuracy": 0.9329406434073403,
+      "precision": 0.0,
+      "recall": 0.0,
+      "F1": 0.0,
+      "support": 141
+    }
+  },
+  "IoUmean": 0.31112281253823226,
+  "IoU50": 0.3103760761214318,
+  "IoU75": 0.3103760761214318,
+  "Tok_Precision": 0.003727865796831314,
+  "Tok_Recall": 0.0033444816053511705,
+  "Tok_F1": 0.0035257822829440283,
+  "per_class": {
+    "face_attribute&text_swap": {
+      "n": 68,
+      "verdict_acc": 1.0,
+      "category_acc": 0.0
+    },
+    "text_swap": {
+      "n": 136,
+      "verdict_acc": 1.0,
+      "category_acc": 0.36764705882352944
+    },
+    "orig": {
+      "n": 1061,
+      "verdict_acc": 0.027332704995287466,
+      "category_acc": 0.02544769085768143
+    },
+    "face_swap": {
+      "n": 397,
+      "verdict_acc": 0.9798488664987406,
+      "category_acc": 0.5994962216624685
+    },
+    "face_attribute": {
+      "n": 318,
+      "verdict_acc": 0.9905660377358491,
+      "category_acc": 0.0031446540880503146
+    },
+    "face_swap&text_swap": {
+      "n": 86,
+      "verdict_acc": 1.0,
+      "category_acc": 0.0
+    },
+    "text_attribute": {
+      "n": 74,
+      "verdict_acc": 0.9864864864864865,
+      "category_acc": 0.0
+    },
+    "face_attribute&text_attribute": {
+      "n": 32,
+      "verdict_acc": 1.0,
+      "category_acc": 0.0
+    },
+    "face_swap&text_attribute": {
+      "n": 35,
+      "verdict_acc": 1.0,
+      "category_acc": 0.0
+    }
+  },
+  "inference_time_s": 8480.380663489923
+}
