@@ -51,9 +51,16 @@ STAGE_SYSTEM = {
     "stage2": (
         "You are a multimodal forensic grounding assistant. Determine authenticity, atomic labels FS/FA/TS/TA, "
         "final category, and requested grounding fields. Mark only minimal manipulated text token positions and "
-        "do not include unchanged surrounding words. Respond only with the requested fields."
+        "do not include unchanged surrounding words. Fake Text Pos must be a JSON-style list of integer 0-based "
+        "word indices into the numbered caption, not image coordinates or copied caption text. Respond only with "
+        "the requested fields."
     ),
 }
+
+
+def numbered_caption(text: str) -> str:
+    tokens = str(text or "").split()
+    return " ".join(f"[{idx}] {tok}" for idx, tok in enumerate(tokens))
 
 
 def compute_eer(labels: np.ndarray, scores: np.ndarray) -> float:
@@ -75,6 +82,23 @@ def build_conversation(sample: dict, stage: str):
             "Determine whether this image-caption pair is authentic or manipulated."
         )
     user_text = user_text.replace("<image>", "").strip()
+    numbered = numbered_caption(sample.get("text", ""))
+    if numbered:
+        user_text = (
+            f"{user_text}\n\nNumbered Caption: {numbered}\n"
+            "Use only a JSON-style list of 0-based integer indices from Numbered Caption for Fake Text Pos, "
+            "for example [2, 5]. Do not copy the numbered caption text or use image coordinates."
+        )
+    if stage == "stage2" or PROMPT_OVERRIDE:
+        user_text = (
+            f"{user_text}\n\n"
+            "Output exactly these five lines. Always include Fake Image Box and Fake Text Pos; use [] when empty:\n"
+            "Verdict: [REAL or FAKE]\n"
+            "Category: [orig, face_swap, face_attribute, text_swap, text_attribute, or a valid combined category joined by &]\n"
+            "Fake Image Box: [box or []]\n"
+            "Fake Text Pos: [positions or []]\n"
+            "Evidence: [concise grounded explanation]"
+        )
     sys_prompt = PROMPT_OVERRIDE if PROMPT_OVERRIDE else STAGE_SYSTEM[stage]
     combined = sys_prompt + "\n\n" + user_text
     conv = [{

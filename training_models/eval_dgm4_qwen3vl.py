@@ -50,8 +50,12 @@ SYSTEM_PROMPT = (
     "pair is authentic or manipulated. Check visual evidence and caption-image "
     "consistency. If the sample is fake, identify the manipulation category and "
     "provide exact grounding fields for the manipulated image region and/or "
-    "manipulated text token positions. If a modality is not manipulated, output "
-    "an empty list for that grounding field. Respond strictly in this five-line "
+    "manipulated text token positions. Fake Text Pos must be a JSON-style list "
+    "of integer 0-based word indices into the numbered caption, for example "
+    "[2, 5]. Do not copy numbered caption text or bracket labels into Fake Text "
+    "Pos, and do not use image coordinates there. If a modality is not "
+    "manipulated, output an empty list for that grounding field. Respond "
+    "strictly in this five-line "
     "format:\n"
     "Verdict: [REAL or FAKE]\n"
     "Category: [orig, face_swap, face_attribute, text_swap, text_attribute, or a valid combined category joined by &]\n"
@@ -59,6 +63,11 @@ SYSTEM_PROMPT = (
     "Fake Text Pos: [positions or []]\n"
     "Evidence: [concise grounded explanation]"
 )
+
+
+def numbered_caption(text: str) -> str:
+    tokens = str(text or "").split()
+    return " ".join(f"[{idx}] {tok}" for idx, tok in enumerate(tokens))
 
 
 def category_to_atoms(category: str | None) -> list[int]:
@@ -123,6 +132,13 @@ def build_messages(sample: dict[str, Any], media_dir: str) -> list[dict[str, Any
     if not user_text:
         user_text = f'<image> Caption: "{sample.get("text", "")}"\nPlease assess whether this image-caption pair is authentic or manipulated.'
     user_text = user_text.replace("<image>", "").strip()
+    numbered = numbered_caption(sample.get("text", ""))
+    if numbered:
+        user_text = (
+            f"{user_text}\n\nNumbered Caption: {numbered}\n"
+            "Use only a JSON-style list of 0-based integer indices from Numbered Caption for Fake Text Pos, "
+            "for example [2, 5]. Do not copy the numbered caption text."
+        )
 
     return [
         {"role": "system", "content": SYSTEM_PROMPT},

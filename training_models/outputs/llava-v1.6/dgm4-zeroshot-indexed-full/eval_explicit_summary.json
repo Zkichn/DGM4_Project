@@ -1,0 +1,101 @@
+{
+  "samples": 2207,
+  "parsed_samples": 2207,
+  "batch_size": 2,
+  "stage": "stage2",
+  "AUC": 0.5,
+  "EER": 0.5,
+  "ACC": 0.5523334843679203,
+  "mAcc": 0.7821703670140462,
+  "OP": 0.10142857142857142,
+  "OR": 0.05193855157278712,
+  "OF1": 0.0686985970004838,
+  "CP": 0.10826107899807322,
+  "CR": 0.12406456346294938,
+  "CF1": 0.11562532111088183,
+  "per_label": {
+    "FS": {
+      "accuracy": 0.765292251925691,
+      "precision": 0.0,
+      "recall": 0.0,
+      "F1": 0.0,
+      "support": 518
+    },
+    "FA": {
+      "accuracy": 0.8106026280018124,
+      "precision": 0.0,
+      "recall": 0.0,
+      "F1": 0.0,
+      "support": 418
+    },
+    "TS": {
+      "accuracy": 0.8676937018577254,
+      "precision": 0.3333333333333333,
+      "recall": 0.006896551724137931,
+      "F1": 0.013513513513513514,
+      "support": 290
+    },
+    "TA": {
+      "accuracy": 0.6850928862709561,
+      "precision": 0.09971098265895954,
+      "recall": 0.48936170212765956,
+      "F1": 0.16566626650660263,
+      "support": 141
+    }
+  },
+  "IoUmean": 0.5758948799275034,
+  "IoU50": 0.5758948799275034,
+  "IoU75": 0.5758948799275034,
+  "Tok_Precision": 0.1362491716368456,
+  "Tok_Recall": 0.28651059085841696,
+  "Tok_F1": 0.18467618790981769,
+  "per_class": {
+    "face_attribute&text_swap": {
+      "n": 68,
+      "verdict_acc": 0.47058823529411764,
+      "category_acc": 0.0
+    },
+    "text_swap": {
+      "n": 136,
+      "verdict_acc": 0.4264705882352941,
+      "category_acc": 0.007352941176470588
+    },
+    "orig": {
+      "n": 1061,
+      "verdict_acc": 0.7455230914231856,
+      "category_acc": 0.7455230914231856
+    },
+    "face_swap": {
+      "n": 397,
+      "verdict_acc": 0.3224181360201511,
+      "category_acc": 0.0
+    },
+    "face_attribute": {
+      "n": 318,
+      "verdict_acc": 0.3081761006289308,
+      "category_acc": 0.0
+    },
+    "face_swap&text_swap": {
+      "n": 86,
+      "verdict_acc": 0.4883720930232558,
+      "category_acc": 0.0
+    },
+    "text_attribute": {
+      "n": 74,
+      "verdict_acc": 0.4864864864864865,
+      "category_acc": 0.4864864864864865
+    },
+    "face_attribute&text_attribute": {
+      "n": 32,
+      "verdict_acc": 0.5,
+      "category_acc": 0.0
+    },
+    "face_swap&text_attribute": {
+      "n": 35,
+      "verdict_acc": 0.5142857142857142,
+      "category_acc": 0.0
+    }
+  },
+  "inference_time_s": 2822.268869386986,
+  "metric_note": "LLaVA-NeXT-Mistral evaluation. Stage1 reports only binary+multilabel; Stage2 adds image+text grounding."
+}
